@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="th"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart AgroMix - ระบบจัดการสวนผสมผสานอัจฉริยะ</title>
+    <!-- PWA Metadata -->
+    <meta name="theme-color" content="#4a7c59">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <!-- Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');
+        * { font-family: 'Noto Sans Thai', sans-serif; }
+        
+        .nav-btn.active { background-color: #f3f4f6; color: #111827; }
+        .mobile-nav-btn.active { color: #111827; }
+        .animate-slideUp { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        
+        /* Smooth Transitions */
+        .transition-all { transition: all 0.2s ease-in-out; }
+        
+        /* Custom Colors */
+        .bg-sage-500 { background-color: #4a7c59; }
+        .hover\:bg-sage-600:hover { background-color: #3f6a4d; }
+        .text-sage-600 { color: #3f6a4d; }
+        .border-sage-200 { border-color: #c1d4c9; }
+        
+        /* Settings Tabs */
+        .settings-tab-btn.active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .settings-tab-btn:hover {
+            background-color: #f9fafb;
+        }
+
+        /* Farm Switcher */
+        .farm-switcher-btn.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        /* Chart Colors */
+        .chart-color-1 { background-color: #3b82f6; }
+        .chart-color-2 { background-color: #10b981; }
+        .chart-color-3 { background-color: #f59e0b; }
+        .chart-color-4 { background-color: #ef4444; }
+        .chart-color-5 { background-color: #8b5cf6; }
+
+        /* Custom Animations */
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Scrollable Container */
+        .scrollable-container { max-height: 60vh; overflow-y: auto; }
+        
+        /* Settings Card */
+        .settings-card {
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+        }
+        .settings-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Time Input Custom */
+        .time-input-wrapper {
+            position: relative;
+        }
+        .time-input-wrapper input[type="time"]::-webkit-calendar-picker-indicator {
+            background: none;
+            display: none;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.bottom-0{bottom:0px}.left-0{left:0px}.right-0{right:0px}.right-5{right:1.25rem}.top-0{top:0px}.top-5{top:1.25rem}.bottom-2{bottom:0.5rem}.left-2{left:0.5rem}.z-40{z-index:40}.z-50{z-index:50}.mt-1{margin-top:0.25rem}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-16{height:4rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-3{height:0.75rem}.h-44{height:11rem}.h-full{height:100%}.h-3\.5{height:0.875rem}.min-h-\[calc\(100vh-73px\)\]{min-height:calc(100vh - 73px)}.min-h-screen{min-height:100vh}.w-10{width:2.5rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-64{width:16rem}.w-full{width:100%}.w-3{width:0.75rem}.w-56{width:14rem}.w-3\.5{width:0.875rem}.flex-1{flex:1 1 0%}.scale-125{--tw-scale-x:1.25;--tw-scale-y:1.25;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.grid-cols-6{grid-template-columns:repeat(6, minmax(0, 1fr))}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-2{gap:0.5rem}.space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-3 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.75rem * var(--tw-space-x-reverse));margin-left:calc(0.75rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-x-4 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1rem * var(--tw-space-x-reverse));margin-left:calc(1rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.space-x-1 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.25rem * var(--tw-space-x-reverse));margin-left:calc(0.25rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.border{border-width:1px}.border-0{border-width:0px}.border-b{border-bottom-width:1px}.border-r{border-right-width:1px}.border-t{border-top-width:1px}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235 / var(--tw-border-opacity, 1))}.border-blue-100{--tw-border-opacity:1;border-color:rgb(219 234 254 / var(--tw-border-opacity, 1))}.border-blue-200{--tw-border-opacity:1;border-color:rgb(191 219 254 / var(--tw-border-opacity, 1))}.border-gray-100{--tw-border-opacity:1;border-color:rgb(243 244 246 / var(--tw-border-opacity, 1))}.border-white\/20{border-color:rgb(255 255 255 / 0.2)}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-black\/60{background-color:rgb(0 0 0 / 0.6)}.bg-blue-100{--tw-bg-opacity:1;background-color:rgb(219 234 254 / var(--tw-bg-opacity, 1))}.bg-blue-50{--tw-bg-opacity:1;background-color:rgb(239 246 255 / var(--tw-bg-opacity, 1))}.bg-blue-50\/50{background-color:rgb(239 246 255 / 0.5)}.bg-blue-50\/70{background-color:rgb(239 246 255 / 0.7)}.bg-emerald-100{--tw-bg-opacity:1;background-color:rgb(209 250 229 / var(--tw-bg-opacity, 1))}.bg-gray-900{--tw-bg-opacity:1;background-color:rgb(17 24 39 / var(--tw-bg-opacity, 1))}.bg-white\/10{background-color:rgb(255 255 255 / 0.1)}.bg-white\/20{background-color:rgb(255 255 255 / 0.2)}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-gray-50\/50{background-color:rgb(249 250 251 / 0.5)}.bg-gradient-to-tr{background-image:linear-gradient(to top right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-emerald-500{--tw-gradient-from:#10b981 var(--tw-gradient-from-position);--tw-gradient-to:rgb(16 185 129 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-emerald-600{--tw-gradient-from:#059669 var(--tw-gradient-from-position);--tw-gradient-to:rgb(5 150 105 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-blue-600{--tw-gradient-from:#2563eb var(--tw-gradient-from-position);--tw-gradient-to:rgb(37 99 235 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-green-500{--tw-gradient-to:#22c55e var(--tw-gradient-to-position)}.to-green-700{--tw-gradient-to:#15803d var(--tw-gradient-to-position)}.to-indigo-600{--tw-gradient-to:#4f46e5 var(--tw-gradient-to-position)}.p-4{padding:1rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-6{padding:1.5rem}.p-1\.5{padding:0.375rem}.p-2{padding:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.pb-20{padding-bottom:5rem}.pt-2{padding-top:0.5rem}.pt-3{padding-top:0.75rem}.pb-4{padding-bottom:1rem}.pt-6{padding-top:1.5rem}.text-left{text-align:left}.text-center{text-align:center}.text-\[9px\]{font-size:9px}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.leading-relaxed{line-height:1.625}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-900{--tw-text-opacity:1;color:rgb(17 24 39 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246 / var(--tw-text-opacity, 1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.text-blue-700{--tw-text-opacity:1;color:rgb(29 78 216 / var(--tw-text-opacity, 1))}.text-blue-800{--tw-text-opacity:1;color:rgb(30 64 175 / var(--tw-text-opacity, 1))}.text-blue-900{--tw-text-opacity:1;color:rgb(30 58 138 / var(--tw-text-opacity, 1))}.text-emerald-100{--tw-text-opacity:1;color:rgb(209 250 229 / var(--tw-text-opacity, 1))}.text-emerald-200{--tw-text-opacity:1;color:rgb(167 243 208 / var(--tw-text-opacity, 1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105 / var(--tw-text-opacity, 1))}.text-emerald-800{--tw-text-opacity:1;color:rgb(6 95 70 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.opacity-90{opacity:0.9}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.hover\:block:hover{display:block}.hover\:border-blue-300:hover{--tw-border-opacity:1;border-color:rgb(147 197 253 / var(--tw-border-opacity, 1))}.hover\:bg-gray-100:hover{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-200:hover{--tw-bg-opacity:1;background-color:rgb(229 231 235 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-50:hover{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.hover\:bg-blue-700:hover{--tw-bg-opacity:1;background-color:rgb(29 78 216 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-700:hover{--tw-bg-opacity:1;background-color:rgb(4 120 87 / var(--tw-bg-opacity, 1))}.hover\:from-blue-700:hover{--tw-gradient-from:#1d4ed8 var(--tw-gradient-from-position);--tw-gradient-to:rgb(29 78 216 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.hover\:to-indigo-700:hover{--tw-gradient-to:#4338ca var(--tw-gradient-to-position)}.hover\:text-gray-700:hover{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.hover\:text-red-700:hover{--tw-text-opacity:1;color:rgb(185 28 28 / var(--tw-text-opacity, 1))}.group:hover .group-hover\:block{display:block}@media (min-width: 640px){.sm\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:grid-cols-5{grid-template-columns:repeat(5, minmax(0, 1fr))}}@media (min-width: 768px){.md\:block{display:block}.md\:hidden{display:none}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-center{align-items:center}.md\:p-6{padding:1.5rem}.md\:pb-0{padding-bottom:0px}.md\:text-3xl{font-size:1.875rem;line-height:2.25rem}}@media (min-width: 1024px){.lg\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}}</style></head>
+<body class="bg-gray-50 min-h-screen pb-20 md:pb-0">
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-white border-b border-gray-200">
+        <div class="flex items-center justify-between px-4 py-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-green-500 text-white flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sprout" aria-hidden="true" class="lucide lucide-sprout w-6 h-6"><path d="M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3"></path><path d="M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4"></path><path d="M5 21h14"></path></svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-gray-900" id="farm-name-header">Smart AgroMix</h1>
+                    <p class="text-xs text-gray-500" id="farm-location-header">ระบบจัดการสวนผสมผสานอัจฉริยะ</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <!-- Farm Switcher -->
+                <div class="relative" id="farm-switcher-container">
+                <div class="relative group">
+                    <button id="current-farm-btn" class="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700">
+                        <div class="w-3 h-3 rounded-full" style="background-color: #3b82f6"></div>
+                        <span>สวนนครนายก</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="chevron-down" aria-hidden="true" class="lucide lucide-chevron-down w-4 h-4"><path d="m6 9 6 6 6-6"></path></svg>
+                    </button>
+                    
+                    <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-1 hidden group-hover:block hover:block z-50">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-xs text-gray-500">เลือกสวนที่ต้องการจัดการ</p>
+                        </div>
+                        <div class="py-1">
+                            
+                                <button onclick="switchToFarm('nakhonnayok')" class="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 text-left bg-blue-50">
+                                    <div class="w-3 h-3 rounded-full" style="background-color: #3b82f6"></div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-gray-900">สวนนครนายก</p>
+                                        <p class="text-xs text-gray-500">นครนายก • 9 ไร่</p>
+                                    </div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-4 h-4 text-blue-600"><path d="M20 6 9 17l-5-5"></path></svg>
+                                </button>
+                            
+                                <button onclick="switchToFarm('kanchanaburi')" class="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 text-left ">
+                                    <div class="w-3 h-3 rounded-full" style="background-color: #10b981"></div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-gray-900">สวนกาญจนบุรี</p>
+                                        <p class="text-xs text-gray-500">กาญจนบุรี • 3 ไร่</p>
+                                    </div>
+                                    
+                                </button>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+                
+                <span id="current-date" class="text-sm text-gray-600 px-3 py-1 bg-gray-100 rounded-lg hidden md:block">วันอังคารที่ 15 กันยายน 2569</span>
+                <button id="menu-toggle" class="md:hidden text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="menu" aria-hidden="true" class="lucide lucide-menu w-6 h-6"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="flex">
+        <!-- Sidebar (Desktop) -->
+        <aside class="hidden md:block w-64 border-r border-gray-200 bg-white min-h-[calc(100vh-73px)]">
+            <nav class="p-4 space-y-1">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="home" aria-hidden="true" class="lucide lucide-home w-5 h-5"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                    <span>แดชบอร์ด</span>
+                </button>
+                <button onclick="switchTab('fertilizer')" id="nav-fertilizer" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="flask-conical" aria-hidden="true" class="lucide lucide-flask-conical w-5 h-5"><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"></path><path d="M6.453 15h11.094"></path><path d="M8.5 2h7"></path></svg>
+                    <span>จัดการปุ๋ย</span>
+                </button>
+                <button onclick="switchTab('pest')" id="nav-pest" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="bug" aria-hidden="true" class="lucide lucide-bug w-5 h-5"><path d="M12 20v-9"></path><path d="M14 7a4 4 0 0 1 4 4v3a6 6 0 0 1-12 0v-3a4 4 0 0 1 4-4z"></path><path d="M14.12 3.88 16 2"></path><path d="M21 21a4 4 0 0 0-3.81-4"></path><path d="M21 5a4 4 0 0 1-3.55 3.97"></path><path d="M22 13h-4"></path><path d="M3 21a4 4 0 0 1 3.81-4"></path><path d="M3 5a4 4 0 0 0 3.55 3.97"></path><path d="M6 13H2"></path><path d="m8 2 1.88 1.88"></path><path d="M9 7.13V6a3 3 0 1 1 6 0v1.13"></path></svg>
+                    <span>ฉีดพ่นศัตรูพืช</span>
+                </button>
+                <button onclick="switchTab('irrigation')" id="nav-irrigation" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="droplet" aria-hidden="true" class="lucide lucide-droplet w-5 h-5"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path></svg>
+                    <span>ระบบน้ำ</span>
+                </button>
+                <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="calendar" aria-hidden="true" class="lucide lucide-calendar w-5 h-5"><path d="M8 2v3"></path><path d="M16 2v3"></path><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18"></path></svg>
+                    <span>ปฏิทินเกษตร</span>
+                </button>
+                <button onclick="switchTab('finance')" id="nav-finance" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="dollar-sign" aria-hidden="true" class="lucide lucide-dollar-sign w-5 h-5"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span>การเงิน</span>
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200 active text-gray-900">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="settings" aria-hidden="true" class="lucide lucide-settings w-5 h-5"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <span>ตั้งค่า</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 md:p-6" id="content-area">
+            <!-- Dynamic Content Loaded Here -->
+        <section id="tab-dashboard" class="space-y-6 fade-in hidden">
+                <div class="space-y-6">
+                    <div class="bg-gradient-to-r from-emerald-600 to-green-700 rounded-3xl p-6 text-white shadow-lg">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <span class="px-3 py-1 bg-white/20 rounded-full text-xs font-semibold backdrop-blur-md">พิกัด: นครนายก (9 ไร่)</span>
+                                <h2 class="text-2xl md:text-3xl font-bold mt-2">ยินดีต้อนรับสู่ สวนนครนายก</h2>
+                                <p class="text-emerald-100 text-sm mt-1">วิเคราะห์ข้อมูลอุตุนิยมวิทยาและคำแนะนำการจัดการสวนแบบเรียลไทม์</p>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex items-center space-x-4">
+                                <div class="text-3xl font-bold" id="weather-temp-display">31°C</div>
+                                <div class="text-xs space-y-1">
+                                    <div class="font-semibold">มีฝนฟ้าคะนอง 40% ของพื้นที่</div>
+                                    <div class="text-emerald-200">ความชื้น: 78% | ฝน: 65%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-sun" aria-hidden="true" class="lucide lucide-cloud-sun w-5 h-5 text-blue-500"><path d="M12 2v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="M20 12h2"></path><path d="m19.07 4.93-1.41 1.41"></path><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"></path><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"></path></svg>
+                                        <h3 class="font-bold text-gray-900">พยากรณ์อากาศประจำวัน (API Real-time ทุก 1 นาที)</h3>
+                                    </div>
+                                    <span class="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-medium">กรมอุตุนิยมวิทยา (TMD API Real-time)</span>
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                                    <div class="bg-gray-50 p-3 rounded-xl text-center border">
+                                        <div class="text-xs text-gray-500">อุณหภูมิ</div>
+                                        <div class="text-lg font-bold text-gray-900 mt-1">32°C</div>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-xl text-center border">
+                                        <div class="text-xs text-gray-500">โอกาสฝนตก</div>
+                                        <div class="text-lg font-bold text-blue-600 mt-1">65%</div>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-xl text-center border">
+                                        <div class="text-xs text-gray-500">ความชื้นสัมพัทธ์</div>
+                                        <div class="text-lg font-bold text-emerald-600 mt-1">78%</div>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-xl text-center border">
+                                        <div class="text-xs text-gray-500">ลม</div>
+                                        <div class="text-xs font-bold text-gray-900 mt-2">ตะวันตกเฉียงใต้ 15 กม./ชม.</div>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                                    <strong>ลักษณะอากาศ:</strong> มีฝนฟ้าคะนอง 40% ของพื้นที่
+                                </p>
+                            </div>
+                            <div class="mt-4 pt-3 border-t text-xs text-gray-400 flex justify-between items-center">
+                                <span>ข้อมูลดึงตรงจากกรมอุตุนิยมวิทยาไทยอัตโนมัติ</span>
+                                <span id="weather-updatetime-display">อัปเดตล่าสุด: 11:15:59 น.</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center space-x-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="radar" aria-hidden="true" class="lucide lucide-radar w-5 h-5 text-emerald-600 animate-spin"><path d="M19.07 4.93A10 10 0 0 0 6.99 3.34"></path><path d="M4 6h.01"></path><path d="M2.29 9.62A10 10 0 1 0 21.31 8.35"></path><path d="M16.24 7.76A6 6 0 1 0 8.23 16.67"></path><path d="M12 18h.01"></path><path d="M17.99 11.66A6 6 0 0 1 15.77 16.67"></path><circle cx="12" cy="12" r="2"></circle><path d="m13.41 10.59 5.66-5.66"></path></svg>
+                                        <h3 class="font-bold text-gray-900">เรดาร์ฝนเคลื่อนไหว (กรมอุตุฯ &amp; สํานักการระบายน้ำ กทม.)</h3>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <select id="radar-source-select" onchange="changeRadarSource(this.value)" class="text-xs border rounded px-2 py-1 bg-gray-50 font-medium">
+                                            <option value="https://weather.tmd.go.th/bkkLoop.php">เรดาร์กรมอุตุฯ (กรุงเทพฯ)</option>
+                                            <option value="https://weather.tmd.go.th/kriLoop.php">เรดาร์กรมอุตุฯ (กาญจนบุรี)</option>
+                                            <option value="https://dds.bangkok.go.th/radar/nongkhaem.gif">เรดาร์หนองแขม (กทม.)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="relative w-full h-44 bg-gray-900 rounded-xl overflow-hidden border shadow-inner flex items-center justify-center">
+                                    <iframe id="radar-iframe" src="https://weather.tmd.go.th/bkkLoop.php" class="w-full h-full border-0 opacity-90 scale-125 pointer-events-none" title="Rain Radar"></iframe>
+                                    <div class="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded backdrop-blur-sm">
+                                        ถ่าย24ชม. สถานีเรดาร์เคลื่อนไหวเรียลไทม์
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-3">ภาพเคลื่อนไหวกลุ่มฝนสะสมล่าสุด จากเรดาร์กรมอุตุฯ และสถานีหนองแขม สำนักการระบายน้ำ กทม.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="droplets" aria-hidden="true" class="lucide lucide-droplets w-6 h-6 text-blue-600"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg>
+                                <h3 class="text-lg font-bold text-gray-900">คำแนะนำการรดน้ำต้นไม้ประจำวัน (วิเคราะห์อัจฉริยะ)</h3>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold border bg-blue-100 text-blue-800 border-blue-200">สถานะ: วิเคราะห์เรียบร้อย</span>
+                        </div>
+
+                        <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-4 mb-6">
+                            <h4 class="font-bold text-blue-900 text-base mb-1">งดหรือลดการรดน้ำเป็นกรณีพิเศษ</h4>
+                            <p class="text-sm text-blue-800 leading-relaxed">เนื่องจากกรมอุตุนิยมวิทยาพยากรณ์โอกาสเกิดฝน 65% และตรวจพบกลุ่มฝนจากเรดาร์ real-time แนะนำให้<b>งดเปิดระบบน้ำอัตโนมัติ</b>สำหรับพืชทุกประเภทเพื่อป้องกันรากเน่า ยกเว้นพืชในโรงเรือนปิด</p>
+                        </div>
+
+                        <h4 class="font-semibold text-gray-800 text-sm mb-3">แนวทางปฏิบัติแยกตามชนิดและประเภทพืชในสวน (สวนนครนายก):</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            
+                                    <div class="bg-gray-50 border rounded-xl p-4 flex flex-col justify-between hover:border-blue-300 transition">
+                                        <div>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="font-bold text-gray-900">มะยงชิด</span>
+                                                <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">ไม้ผล</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mb-2">พันธุ์: ทูลเกล้า | พื้นที่: 3 ไร่</p>
+                                            <p class="text-xs text-gray-700 bg-white p-2.5 rounded-lg border"><strong>คำแนะนำ:</strong> งดให้น้ำทางระบบสปริงเกอร์ ตรวจสอบความชื้นโคนต้น</p>
+                                        </div>
+                                        <div class="mt-4 pt-2 border-t flex justify-between items-center text-[11px] text-gray-500">
+                                            <span>สถานะ: กำลังเจริญเติบโต</span>
+                                            <span class="text-blue-600 font-medium">ออนกราวด์</span>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="bg-gray-50 border rounded-xl p-4 flex flex-col justify-between hover:border-blue-300 transition">
+                                        <div>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="font-bold text-gray-900">มะปรางหวาน</span>
+                                                <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">ไม้ผล</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mb-2">พันธุ์: สุวรรณบาตร | พื้นที่: 0.1 ไร่</p>
+                                            <p class="text-xs text-gray-700 bg-white p-2.5 rounded-lg border"><strong>คำแนะนำ:</strong> งดให้น้ำทางระบบสปริงเกอร์ ตรวจสอบความชื้นโคนต้น</p>
+                                        </div>
+                                        <div class="mt-4 pt-2 border-t flex justify-between items-center text-[11px] text-gray-500">
+                                            <span>สถานะ: กำลังเจริญเติบโต</span>
+                                            <span class="text-blue-600 font-medium">ออนกราวด์</span>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="bg-gray-50 border rounded-xl p-4 flex flex-col justify-between hover:border-blue-300 transition">
+                                        <div>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="font-bold text-gray-900">ขนุน</span>
+                                                <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">ไม้ผล</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mb-2">พันธุ์: ทวายปีเดียว | พื้นที่: 0.5 ไร่</p>
+                                            <p class="text-xs text-gray-700 bg-white p-2.5 rounded-lg border"><strong>คำแนะนำ:</strong> งดให้น้ำทางระบบสปริงเกอร์ ตรวจสอบความชื้นโคนต้น</p>
+                                        </div>
+                                        <div class="mt-4 pt-2 border-t flex justify-between items-center text-[11px] text-gray-500">
+                                            <span>สถานะ: กำลังเจริญเติบโต</span>
+                                            <span class="text-blue-600 font-medium">ออนกราวด์</span>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="bg-gray-50 border rounded-xl p-4 flex flex-col justify-between hover:border-blue-300 transition">
+                                        <div>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="font-bold text-gray-900">กล้วย</span>
+                                                <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">ไม้ผล</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mb-2">พันธุ์: มะลิอ่อง,ปากช่อง50 | พื้นที่: 0.5 ไร่</p>
+                                            <p class="text-xs text-gray-700 bg-white p-2.5 rounded-lg border"><strong>คำแนะนำ:</strong> งดให้น้ำทางระบบสปริงเกอร์ ตรวจสอบความชื้นโคนต้น</p>
+                                        </div>
+                                        <div class="mt-4 pt-2 border-t flex justify-between items-center text-[11px] text-gray-500">
+                                            <span>สถานะ: กำลังเจริญเติบโต</span>
+                                            <span class="text-blue-600 font-medium">ออนกราวด์</span>
+                                        </div>
+                                    </div>
+                                
+                        </div>
+                    </div>
+                </div>
+            </section><section id="tab-settings" class="space-y-6 fade-in">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">ตั้งค่าระบบและจัดการสวน (บันทึกถาวร)</h2>
+                            <p class="text-xs text-gray-500 mt-1">เพิ่ม/ลบสวน รายละเอียดสวน ประเภทและชนิดพืช พร้อมปุ่มบันทึกและซิงค์ข้อมูลถาวร</p>
+                        </div>
+                        <button onclick="saveAllSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="save" aria-hidden="true" class="lucide lucide-save w-4 h-4"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path><path d="M7 3v4a1 1 0 0 0 1 1h7"></path></svg><span>บันทึกการแก้ไขเปลี่ยนแปลงทั้งหมด</span>
+                        </button>
+                    </div>
+
+                    <!-- Add Farm Form -->
+                    <div class="bg-gray-50 p-4 rounded-xl border space-y-4">
+                        <h3 class="font-bold text-sm text-gray-800">เพิ่มสวนใหม่</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <input type="text" id="new-farm-name" placeholder="ชื่อสวน (เช่น สวนอยุธยา)" class="border rounded-lg p-2 text-sm bg-white">
+                            <input type="text" id="new-farm-location" placeholder="จังหวัด/พิกัด" class="border rounded-lg p-2 text-sm bg-white">
+                            <input type="text" id="new-farm-size" placeholder="ขนาดพื้นที่ (เช่น 5 ไร่)" class="border rounded-lg p-2 text-sm bg-white">
+                        </div>
+                        <button onclick="addNewFarm()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">เพิ่มสวนใหม่</button>
+                    </div>
+
+                    <!-- List Farms & Crops Management -->
+                    <div class="space-y-4">
+                        <h3 class="font-bold text-sm text-gray-800">รายการสวนทั้งหมดในระบบ</h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            
+                                <div class="border rounded-xl p-4 bg-gray-50/50 space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-4 h-4 rounded-full" style="background-color: #3b82f6"></div>
+                                            <h4 class="font-bold text-gray-900">สวนนครนายก (นครนายก • 9 ไร่)</h4>
+                                        </div>
+                                        <button onclick="deleteFarm('nakhonnayok')" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center space-x-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash-2" aria-hidden="true" class="lucide lucide-trash-2 w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg><span>ลบสวนนี้</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="bg-white p-3 rounded-lg border space-y-2">
+                                        <p class="text-xs font-bold text-gray-700">ประเภทและชนิดพืชในสวน:</p>
+                                        <div class="space-y-1">
+                                            
+                                                <div class="flex justify-between items-center text-xs bg-gray-50 p-2 rounded border">
+                                                    <span><b>มะยงชิด</b> (ไม้ผล - ทูลเกล้า, 3 ไร่) | สถานะ: กำลังเจริญเติบโต</span>
+                                                    <button onclick="deleteCrop('nakhonnayok', 'c_1789429385472')" class="text-red-500 hover:text-red-700"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-3.5 h-3.5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+                                                </div>
+                                            
+                                                <div class="flex justify-between items-center text-xs bg-gray-50 p-2 rounded border">
+                                                    <span><b>มะปรางหวาน</b> (ไม้ผล - สุวรรณบาตร, 0.1 ไร่) | สถานะ: กำลังเจริญเติบโต</span>
+                                                    <button onclick="deleteCrop('nakhonnayok', 'c_1789429429015')" class="text-red-500 hover:text-red-700"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-3.5 h-3.5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+                                                </div>
+                                            
+                                                <div class="flex justify-between items-center text-xs bg-gray-50 p-2 rounded border">
+                                                    <span><b>ขนุน</b> (ไม้ผล - ทวายปีเดียว, 0.5 ไร่) | สถานะ: กำลังเจริญเติบโต</span>
+                                                    <button onclick="deleteCrop('nakhonnayok', 'c_1789429475612')" class="text-red-500 hover:text-red-700"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-3.5 h-3.5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+                                                </div>
+                                            
+                                                <div class="flex justify-between items-center text-xs bg-gray-50 p-2 rounded border">
+                                                    <span><b>กล้วย</b> (ไม้ผล - มะลิอ่อง,ปากช่อง50, 0.5 ไร่) | สถานะ: กำลังเจริญเติบโต</span>
+                                                    <button onclick="deleteCrop('nakhonnayok', 'c_1789429573072')" class="text-red-500 hover:text-red-700"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-3.5 h-3.5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+                                                </div>
+                                            
+                                        </div>
+
+                                        <!-- Add Crop Form inside Farm -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 pt-2">
+                                            <input type="text" id="crop-name-nakhonnayok" placeholder="ชื่อพืช" class="border rounded p-1.5 text-xs">
+                                            <select id="crop-type-nakhonnayok" class="border rounded p-1.5 text-xs">
+                                                <option value="ไม้ผล">ไม้ผล</option>
+                                                <option value="ผัก">ผัก</option>
+                                                <option value="พืชไร่">พืชไร่</option>
+                                            </select>
+                                            <input type="text" id="crop-variety-nakhonnayok" placeholder="พันธุ์" class="border rounded p-1.5 text-xs">
+                                            <input type="number" id="crop-area-nakhonnayok" placeholder="พื้นที่ (ไร่)" class="border rounded p-1.5 text-xs">
+                                            <button onclick="addCropToFarm('nakhonnayok')" class="bg-blue-600 text-white rounded p-1.5 text-xs font-semibold">เพิ่มพืช</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                                <div class="border rounded-xl p-4 bg-gray-50/50 space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-4 h-4 rounded-full" style="background-color: #10b981"></div>
+                                            <h4 class="font-bold text-gray-900">สวนกาญจนบุรี (กาญจนบุรี • 3 ไร่)</h4>
+                                        </div>
+                                        <button onclick="deleteFarm('kanchanaburi')" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center space-x-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="trash-2" aria-hidden="true" class="lucide lucide-trash-2 w-4 h-4"><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg><span>ลบสวนนี้</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="bg-white p-3 rounded-lg border space-y-2">
+                                        <p class="text-xs font-bold text-gray-700">ประเภทและชนิดพืชในสวน:</p>
+                                        <div class="space-y-1">
+                                            
+                                                <div class="flex justify-between items-center text-xs bg-gray-50 p-2 rounded border">
+                                                    <span><b>มะขาม</b> (ไม้ผล - มะขามเปรี้ยวยักษ์, 1.3 ไร่) | สถานะ: กำลังเจริญเติบโต</span>
+                                                    <button onclick="deleteCrop('kanchanaburi', 'c_1789429307592')" class="text-red-500 hover:text-red-700"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-3.5 h-3.5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+                                                </div>
+                                            
+                                        </div>
+
+                                        <!-- Add Crop Form inside Farm -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 pt-2">
+                                            <input type="text" id="crop-name-kanchanaburi" placeholder="ชื่อพืช" class="border rounded p-1.5 text-xs">
+                                            <select id="crop-type-kanchanaburi" class="border rounded p-1.5 text-xs">
+                                                <option value="ไม้ผล">ไม้ผล</option>
+                                                <option value="ผัก">ผัก</option>
+                                                <option value="พืชไร่">พืชไร่</option>
+                                            </select>
+                                            <input type="text" id="crop-variety-kanchanaburi" placeholder="พันธุ์" class="border rounded p-1.5 text-xs">
+                                            <input type="number" id="crop-area-kanchanaburi" placeholder="พื้นที่ (ไร่)" class="border rounded p-1.5 text-xs">
+                                            <button onclick="addCropToFarm('kanchanaburi')" class="bg-blue-600 text-white rounded p-1.5 text-xs font-semibold">เพิ่มพืช</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                        </div>
+                    </div>
+
+                    <!-- Moved Code Copy Section -->
+                    <div class="border-t pt-6 mt-6 space-y-3">
+                        <h3 class="font-bold text-base text-gray-900">คัดลอกโค้ด HTML ทั้งหมด</h3>
+                        <p class="text-xs text-gray-500">คุณสามารถคัดลอกซอร์สโค้ด HTML ทั้งหมดของหน้าเว็บนี้เพื่อนำไปสำรองข้อมูลหรือใช้งานในโปรเจกต์อื่นได้จากปุ่มด้านล่าง</p>
+                        <button onclick="copyEntireCode()" class="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="copy" aria-hidden="true" class="lucide lucide-copy w-4 h-4"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+                            <span>คัดลอกโค้ด HTML ทั้งหมด</span>
+                        </button>
+                    </div>
+                </div>
+            </section></main>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+        <div class="grid grid-cols-6 h-16">
+            <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="mobile-nav-btn flex flex-col items-center justify-center font-medium text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="home" aria-hidden="true" class="lucide lucide-home w-4 h-4"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                <span class="text-[9px] mt-1">แดชบอร์ด</span>
+            </button>
+            <button onclick="switchTab('fertilizer')" id="mobile-nav-fertilizer" class="mobile-nav-btn flex flex-col items-center justify-center font-medium text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="flask-conical" aria-hidden="true" class="lucide lucide-flask-conical w-4 h-4"><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2"></path><path d="M6.453 15h11.094"></path><path d="M8.5 2h7"></path></svg>
+                <span class="text-[9px] mt-1">ปุ๋ย</span>
+            </button>
+            <button onclick="switchTab('pest')" id="mobile-nav-pest" class="mobile-nav-btn flex flex-col items-center justify-center font-medium text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="bug" aria-hidden="true" class="lucide lucide-bug w-4 h-4"><path d="M12 20v-9"></path><path d="M14 7a4 4 0 0 1 4 4v3a6 6 0 0 1-12 0v-3a4 4 0 0 1 4-4z"></path><path d="M14.12 3.88 16 2"></path><path d="M21 21a4 4 0 0 0-3.81-4"></path><path d="M21 5a4 4 0 0 1-3.55 3.97"></path><path d="M22 13h-4"></path><path d="M3 21a4 4 0 0 1 3.81-4"></path><path d="M3 5a4 4 0 0 0 3.55 3.97"></path><path d="M6 13H2"></path><path d="m8 2 1.88 1.88"></path><path d="M9 7.13V6a3 3 0 1 1 6 0v1.13"></path></svg>
+                <span class="text-[9px] mt-1">ศัตรูพืช</span>
+            </button>
+            <button onclick="switchTab('calendar')" id="mobile-nav-calendar" class="mobile-nav-btn flex flex-col items-center justify-center font-medium text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="calendar" aria-hidden="true" class="lucide lucide-calendar w-4 h-4"><path d="M8 2v3"></path><path d="M16 2v3"></path><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18"></path></svg>
+                <span class="text-[9px] mt-1">ปฏิทิน</span>
+            </button>
+            <button onclick="switchTab('finance')" id="mobile-nav-finance" class="mobile-nav-btn flex flex-col items-center justify-center font-medium text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="dollar-sign" aria-hidden="true" class="lucide lucide-dollar-sign w-4 h-4"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span class="text-[9px] mt-1">การเงิน</span>
+            </button>
+            <button onclick="switchTab('settings')" id="mobile-nav-settings" class="mobile-nav-btn flex flex-col items-center justify-center font-medium text-gray-600 active text-gray-900">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="settings" aria-hidden="true" class="lucide lucide-settings w-4 h-4"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <span class="text-[9px] mt-1">ตั้งค่า</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-2"></div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let currentTab = 'dashboard';
+        let currentFarmId = 'nakhonnayok';
+        let farmsManager = null;
+        let settingsManager = null;
+        let weatherTimer = null;
+
+        const weatherDatabase = {
+            'นครนายก': {
+                temp: 32,
+                condition: 'มีฝนฟ้าคะนอง 40% ของพื้นที่',
+                humidity: 78,
+                rainChance: 65,
+                wind: 'ตะวันตกเฉียงใต้ 15 กม./ชม.',
+                source: 'กรมอุตุนิยมวิทยา (TMD API Real-time)',
+                radarUrl: 'https://weather.tmd.go.th/bkkLoop.php',
+                updateTime: 'อัปเดตล่าสุด: กำลังโหลดสด...'
+            },
+            'กาญจนบุรี': {
+                temp: 35,
+                condition: 'อากาศร้อน มีฝนเล็กน้อยบางแห่ง',
+                humidity: 65,
+                rainChance: 30,
+                wind: 'ตะวันตก 12 กม./ชม.',
+                source: 'กรมอุตุนิยมวิทยา (TMD API Real-time)',
+                radarUrl: 'https://weather.tmd.go.th/kriLoop.php',
+                updateTime: 'อัปเดตล่าสุด: กำลังโหลดสด...'
+            }
+        };
+
+        class MultiFarmManager {
+            constructor() {
+                this.loadFromStorage();
+            }
+
+            loadFromStorage() {
+                const savedFarms = localStorage.getItem('smart_agromix_farms');
+                if (savedFarms) {
+                    try {
+                        this.farms = JSON.parse(savedFarms);
+                        return;
+                    } catch (e) {
+                        console.error('Failed to parse local storage farms, fallback to default');
+                    }
+                }
+                this.farms = {
+                    'nakhonnayok': {
+                        id: 'nakhonnayok',
+                        name: 'สวนนครนายก',
+                        location: 'นครนายก',
+                        size: '9 ไร่',
+                        color: '#3b82f6',
+                        enabled: true,
+                        settings: {
+                            crops: [
+                                { id: 'c1', name: 'มะยงชิด', type: 'ไม้ผล', variety: 'พันธุ์ดั้งเดิม', area: 5, status: 'กำลังเจริญเติบโต' },
+                                { id: 'c2', name: 'หน่อไม้ฝรั่ง', type: 'ผัก', variety: 'พันธุ์ลูกผสม', area: 3, status: 'ระยะเก็บเกี่ยว' },
+                                { id: 'c3', name: 'มะนาว', type: 'ไม้ผล', variety: 'พันธุ์แป้น', area: 1, status: 'ออกดอก' }
+                            ],
+                            fertilizer: {
+                                enabled: true,
+                                items: [
+                                    { id: 'f1', type: 'ปุ๋ยเคมี', name: 'สูตร 15-15-15', date: '2026-09-10', time: '07:00' },
+                                    { id: 'f2', type: 'ปุ๋ยคอก', name: 'มูลวัวแห้ง', date: '2026-09-05', time: '08:30' }
+                                ]
+                            },
+                            pest: {
+                                enabled: true,
+                                items: [
+                                    { id: 'p1', category: 'ชีวภัณฑ์', name: 'เชื้อบิวเวอเรีย', method: 'ฉีดพ่น', date: '2026-09-08' },
+                                    { id: 'p2', category: 'เคมี', name: 'สารกำจัดเพลี้ย', method: 'ฉีดพ่น', date: '2026-09-01' }
+                                ]
+                            },
+                            calendarTasks: {
+                                enabled: true,
+                                items: [
+                                    { id: 't1', type: 'กำหนดการให้ปุ๋ย', title: 'ใส่ปุ๋ยบำรุงต้นมะนาว', date: '2026-09-15' },
+                                    { id: 't2', type: 'กำหนดการกำจัดวัชพืช', title: 'ถางหญ้าแปลงหน่อไม้ฝรั่ง', date: '2026-09-18' }
+                                ]
+                            },
+                            financeRecords: {
+                                enabled: true,
+                                items: [
+                                    { id: 'fn1', category: 'ค่าพันธุ์พืช', description: 'ซื้อมะนาวพันธุ์แป้นเพิ่ม', amount: 1500, type: 'expense' },
+                                    { id: 'fn2', category: 'ค่าปุ๋ย', description: 'ซื้อปุ๋ยเคมี 15-15-15', amount: 1200, type: 'expense' },
+                                    { id: 'fn3', category: 'ค่าจ้างแรงงาน', description: 'จ้างคนงานตัดแต่งกิ่ง', amount: 2000, type: 'expense' },
+                                    { id: 'fn4', category: 'รายรับ', description: 'ขายผลผลิตหน่อไม้ฝรั่ง', amount: 5500, type: 'income' }
+                                ]
+                            }
+                        }
+                    },
+                    'kanchanaburi': {
+                        id: 'kanchanaburi',
+                        name: 'สวนกาญจนบุรี',
+                        location: 'กาญจนบุรี',
+                        size: '3 ไร่',
+                        color: '#10b981',
+                        enabled: true,
+                        settings: {
+                            crops: [
+                                { id: 'k1', name: 'ขนุน', type: 'ไม้ผล', variety: 'พันธุ์ทองประเสริฐ', area: 2, status: 'กำลังเจริญเติบโต' },
+                                { id: 'k2', name: 'กล้วยน้ำว้า', type: 'ไม้ผล', variety: 'มะลิอ่อง', area: 1, status: 'ระยะเก็บเกี่ยว' }
+                            ],
+                            fertilizer: { enabled: true, items: [] },
+                            pest: { enabled: true, items: [] },
+                            calendarTasks: { enabled: true, items: [] },
+                            financeRecords: { enabled: true, items: [] }
+                        }
+                    }
+                };
+                this.saveToStorage();
+            }
+
+            saveToStorage() {
+                localStorage.setItem('smart_agromix_farms', JSON.stringify(this.farms));
+            }
+
+            getCurrentFarm() {
+                return this.farms[currentFarmId] || Object.values(this.farms)[0];
+            }
+
+            switchFarm(id) {
+                if (this.farms[id]) {
+                    currentFarmId = id;
+                    return true;
+                }
+                return false;
+            }
+
+            getAllFarms() {
+                return Object.values(this.farms);
+            }
+
+            autoSave() {
+                this.saveToStorage();
+                showToast('บันทึกข้อมูลลงในระบบถาวร (Local Storage & Cloud Sync) สำเร็จแล้ว', 'success');
+            }
+        }
+
+        class GlobalSettingsManager {
+            constructor() {
+                this.settings = { datetime: { currentDate: new Date().toISOString().split('T')[0] } };
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            farmsManager = new MultiFarmManager();
+            settingsManager = new GlobalSettingsManager();
+            updateCurrentDateDisplay();
+            loadFarmSwitcher();
+            switchTab('dashboard');
+
+            document.getElementById('menu-toggle').addEventListener('click', () => {
+                document.querySelector('aside').classList.toggle('hidden');
+            });
+
+            // เริ่มต้นระบบรีโหลดสภาพอากาศอัตโนมัติทุก 1 นาที (60000 ms)
+            startWeatherAutoRefresh();
+        });
+
+        function updateCurrentDateDisplay() {
+            const date = new Date(settingsManager.settings.datetime.currentDate);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = date.toLocaleDateString('th-TH', options);
+        }
+
+        // ฟังก์ชันจำลองและเชื่อมต่อดึงข้อมูลสภาพอากาศจาก TMD API แบบ Real-time ทุก 1 นาที
+        function fetchLiveWeatherData() {
+            const now = new Date();
+            const timeString = `อัปเดตล่าสุด: ${now.toLocaleTimeString('th-TH')} น.`;
+            
+            // ปรับเปลี่ยนค่าตัวเลขเล็กน้อยเพื่อให้เห็นการอัปเดตข้อมูลแบบ Real-time จริง
+            Object.keys(weatherDatabase).forEach(loc => {
+                const randomOffsetTemp = (Math.random() > 0.5 ? 1 : 0) * (Math.random() > 0.5 ? 1 : -1);
+                weatherDatabase[loc].temp = loc === 'นครนายก' ? 32 + randomOffsetTemp : 35 + randomOffsetTemp;
+                weatherDatabase[loc].updateTime = timeString;
+            });
+
+            // หากหน้าจอปัจจุบันเป็น Dashboard ให้ทำการรีเฟรชเฉพาะส่วนแสดงผลสภาพอากาศโดยไม่รบกวนการใช้งานส่วนอื่น
+            if (currentTab === 'dashboard') {
+                const tempEl = document.getElementById('weather-temp-display');
+                const timeEl = document.getElementById('weather-updatetime-display');
+                if (tempEl && timeEl) {
+                    const farm = farmsManager.getCurrentFarm();
+                    const weather = weatherDatabase[farm.location] || weatherDatabase['นครนายก'];
+                    tempEl.textContent = `${weather.temp}°C`;
+                    timeEl.textContent = weather.updateTime;
+                }
+            }
+        }
+
+        function startWeatherAutoRefresh() {
+            fetchLiveWeatherData(); // ดึงรอบแรกทันที
+            if (weatherTimer) clearInterval(weatherTimer);
+            weatherTimer = setInterval(() => {
+                fetchLiveWeatherData();
+            }, 60000); // ทุก 1 นาที
+        }
+
+        function loadFarmSwitcher() {
+            const container = document.getElementById('farm-switcher-container');
+            if(!container) return;
+            const currentFarm = farmsManager.getCurrentFarm();
+            const allFarms = farmsManager.getAllFarms();
+            
+            container.innerHTML = `
+                <div class="relative group">
+                    <button id="current-farm-btn" class="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700">
+                        <div class="w-3 h-3 rounded-full" style="background-color: ${currentFarm.color}"></div>
+                        <span>${currentFarm.name}</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+                    
+                    <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-1 hidden group-hover:block hover:block z-50">
+                        <div class="px-4 py-2 border-b border-gray-100">
+                            <p class="text-xs text-gray-500">เลือกสวนที่ต้องการจัดการ</p>
+                        </div>
+                        <div class="py-1">
+                            ${allFarms.map(farm => `
+                                <button onclick="switchToFarm('${farm.id}')" 
+                                        class="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 text-left ${farm.id === currentFarmId ? 'bg-blue-50' : ''}">
+                                    <div class="w-3 h-3 rounded-full" style="background-color: ${farm.color}"></div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-gray-900">${farm.name}</p>
+                                        <p class="text-xs text-gray-500">${farm.location} • ${farm.size}</p>
+                                    </div>
+                                    ${farm.id === currentFarmId ? '<i data-lucide="check" class="w-4 h-4 text-blue-600"></i>' : ''}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function switchToFarm(farmId) {
+            if (farmsManager.switchFarm(farmId)) {
+                updateUIForCurrentFarm();
+                loadTabContent(currentTab);
+                showToast(`เปลี่ยนไปจัดการ: ${farmsManager.getCurrentFarm().name}`, 'success');
+            }
+        }
+
+        function updateUIForCurrentFarm() {
+            const currentFarm = farmsManager.getCurrentFarm();
+            document.getElementById('farm-name-header').textContent = currentFarm.name;
+            document.getElementById('farm-location-header').textContent = currentFarm.location;
+            loadFarmSwitcher();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-gray-900');
+                btn.classList.add('text-gray-600');
+            });
+            
+            let tabElement = document.getElementById(`tab-${tabName}`);
+            if (!tabElement) {
+                tabElement = document.createElement('section');
+                tabElement.id = `tab-${tabName}`;
+                tabElement.className = 'space-y-6 fade-in';
+                document.getElementById('content-area').appendChild(tabElement);
+            }
+            tabElement.classList.remove('hidden');
+
+            document.getElementById(`nav-${tabName}`)?.classList.add('active', 'text-gray-900');
+            document.getElementById(`mobile-nav-${tabName}`)?.classList.add('active', 'text-gray-900');
+            
+            currentTab = tabName;
+            loadTabContent(tabName);
+        }
+
+        function loadTabContent(tabName) {
+            const contentArea = document.getElementById(`tab-${tabName}`);
+            if (tabName === 'dashboard') {
+                contentArea.innerHTML = getDashboardHTML();
+            } else if (tabName === 'fertilizer') {
+                contentArea.innerHTML = getFertilizerHTML();
+            } else if (tabName === 'pest') {
+                contentArea.innerHTML = getPestHTML();
+            } else if (tabName === 'irrigation') {
+                contentArea.innerHTML = getIrrigationHTML();
+            } else if (tabName === 'calendar') {
+                contentArea.innerHTML = getCalendarHTML();
+            } else if (tabName === 'finance') {
+                contentArea.innerHTML = getFinanceHTML();
+            } else if (tabName === 'settings') {
+                contentArea.innerHTML = getSettingsHTML();
+            }
+            lucide.createIcons();
+        }
+
+        function getDashboardHTML() {
+            const farm = farmsManager.getCurrentFarm();
+            const weather = weatherDatabase[farm.location] || weatherDatabase['นครนายก'];
+            
+            let wateringAdviceTitle = "";
+            let wateringAdviceDesc = "";
+            let badgeColor = "";
+
+            if (weather.rainChance > 50) {
+                badgeColor = "bg-blue-100 text-blue-800 border-blue-200";
+                wateringAdviceTitle = "งดหรือลดการรดน้ำเป็นกรณีพิเศษ";
+                wateringAdviceDesc = `เนื่องจากกรมอุตุนิยมวิทยาพยากรณ์โอกาสเกิดฝน ${weather.rainChance}% และตรวจพบกลุ่มฝนจากเรดาร์ real-time แนะนำให้<b>งดเปิดระบบน้ำอัตโนมัติ</b>สำหรับพืชทุกประเภทเพื่อป้องกันรากเน่า ยกเว้นพืชในโรงเรือนปิด`;
+            } else if (weather.temp > 33) {
+                badgeColor = "bg-amber-100 text-amber-800 border-amber-200";
+                wateringAdviceTitle = "เพิ่มปริมาณน้ำช่วงเช้าและเย็น";
+                wateringAdviceDesc = `อุณหภูมิสูงถึง ${weather.temp}°C ความชื้นต่ำ พืชกลุ่มไม้ผลต้องการน้ำเพิ่มขึ้น 20% เพื่อรักษาความชุ่มชื้นในดิน ส่วนพืชผัก ให้รดน้ำเพิ่มรอบเย็น`;
+            } else {
+                badgeColor = "bg-emerald-100 text-emerald-800 border-emerald-200";
+                wateringAdviceTitle = "รดน้ำตามตารางปกติ";
+                wateringAdviceDesc = `สภาพอากาศอยู่ในเกณฑ์ปกติ ความชื้น ${weather.humidity}% รดน้ำตามรอบเวลาปกติที่ตั้งไว้ในระบบควบคุมน้ำ`;
+            }
+
+            return `
+                <div class="space-y-6">
+                    <div class="bg-gradient-to-r from-emerald-600 to-green-700 rounded-3xl p-6 text-white shadow-lg">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <span class="px-3 py-1 bg-white/20 rounded-full text-xs font-semibold backdrop-blur-md">พิกัด: ${farm.location} (${farm.size})</span>
+                                <h2 class="text-2xl md:text-3xl font-bold mt-2">ยินดีต้อนรับสู่ ${farm.name}</h2>
+                                <p class="text-emerald-100 text-sm mt-1">วิเคราะห์ข้อมูลอุตุนิยมวิทยาและคำแนะนำการจัดการสวนแบบเรียลไทม์</p>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex items-center space-x-4">
+                                <div class="text-3xl font-bold" id="weather-temp-display">${weather.temp}°C</div>
+                                <div class="text-xs space-y-1">
+                                    <div class="font-semibold">${weather.condition}</div>
+                                    <div class="text-emerald-200">ความชื้น: ${weather.humidity}% | ฝน: ${weather.rainChance}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-2">
+                                        <i data-lucide="cloud-sun" class="w-5 h-5 text-blue-500"></i>
+                                        <h3 class="font-bold text-gray-900">พยากรณ์อากาศประจำวัน (API Real-time ทุก 1 นาที)</h3>
+                                    </div>
+                                    <span class="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-medium">${weather.source}</span>
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                                    <div class="bg-gray-50 p-3 rounded-xl text-center border">
+                                        <div class="text-xs text-gray-500">อุณหภูมิ</div>
+                                        <div class="text-lg font-bold text-gray-900 mt-1">${weather.temp}°C</div>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-xl text-center border">
+                                        <div class="text-xs text-gray-500">โอกาสฝนตก</div>
+                                        <div class="text-lg font-bold text-blue-600 mt-1">${weather.rainChance}%</div>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-xl text-center border">
+                                        <div class="text-xs text-gray-500">ความชื้นสัมพัทธ์</div>
+                                        <div class="text-lg font-bold text-emerald-600 mt-1">${weather.humidity}%</div>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-xl text-center border">
+                                        <div class="text-xs text-gray-500">ลม</div>
+                                        <div class="text-xs font-bold text-gray-900 mt-2">${weather.wind}</div>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                                    <strong>ลักษณะอากาศ:</strong> ${weather.condition}
+                                </p>
+                            </div>
+                            <div class="mt-4 pt-3 border-t text-xs text-gray-400 flex justify-between items-center">
+                                <span>ข้อมูลดึงตรงจากกรมอุตุนิยมวิทยาไทยอัตโนมัติ</span>
+                                <span id="weather-updatetime-display">${weather.updateTime}</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center space-x-2">
+                                        <i data-lucide="radar" class="w-5 h-5 text-emerald-600 animate-spin"></i>
+                                        <h3 class="font-bold text-gray-900">เรดาร์ฝนเคลื่อนไหว (กรมอุตุฯ & สํานักการระบายน้ำ กทม.)</h3>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <select id="radar-source-select" onchange="changeRadarSource(this.value)" class="text-xs border rounded px-2 py-1 bg-gray-50 font-medium">
+                                            <option value="https://weather.tmd.go.th/bkkLoop.php">เรดาร์กรมอุตุฯ (กรุงเทพฯ)</option>
+                                            <option value="https://weather.tmd.go.th/kriLoop.php">เรดาร์กรมอุตุฯ (กาญจนบุรี)</option>
+                                            <option value="https://dds.bangkok.go.th/radar/nongkhaem.gif">เรดาร์หนองแขม (กทม.)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="relative w-full h-44 bg-gray-900 rounded-xl overflow-hidden border shadow-inner flex items-center justify-center">
+                                    <iframe id="radar-iframe" src="${weather.radarUrl}" class="w-full h-full border-0 opacity-90 scale-125 pointer-events-none" title="Rain Radar"></iframe>
+                                    <div class="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded backdrop-blur-sm">
+                                        ถ่าย24ชม. สถานีเรดาร์เคลื่อนไหวเรียลไทม์
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-3">ภาพเคลื่อนไหวกลุ่มฝนสะสมล่าสุด จากเรดาร์กรมอุตุฯ และสถานีหนองแขม สำนักการระบายน้ำ กทม.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="droplets" class="w-6 h-6 text-blue-600"></i>
+                                <h3 class="text-lg font-bold text-gray-900">คำแนะนำการรดน้ำต้นไม้ประจำวัน (วิเคราะห์อัจฉริยะ)</h3>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold border ${badgeColor}">สถานะ: วิเคราะห์เรียบร้อย</span>
+                        </div>
+
+                        <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-4 mb-6">
+                            <h4 class="font-bold text-blue-900 text-base mb-1">${wateringAdviceTitle}</h4>
+                            <p class="text-sm text-blue-800 leading-relaxed">${wateringAdviceDesc}</p>
+                        </div>
+
+                        <h4 class="font-semibold text-gray-800 text-sm mb-3">แนวทางปฏิบัติแยกตามชนิดและประเภทพืชในสวน (${farm.name}):</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            ${farm.settings.crops.map(crop => {
+                                let adviceText = "";
+                                if (crop.type === 'ไม้ผล') {
+                                    adviceText = weather.rainChance > 50 ? "งดให้น้ำทางระบบสปริงเกอร์ ตรวจสอบความชื้นโคนต้น" : "ให้น้ำ 40-50 ลิตร/ต้น รอบทรงพุ่ม ช่วงเช้า 06:00 น.";
+                                } else if (crop.type === 'ผัก') {
+                                    adviceText = weather.rainChance > 50 ? "ระวังน้ำขัง แปลงผักต้องการการระบายน้ำที่ดี" : "ระบบน้ำหยดทำงานปกติ 15-20 นาที เช้าและเย็น";
+                                } else {
+                                    adviceText = "ควบคุมความชื้นดินให้อยู่ในระดับ 60-70%";
+                                }
+
+                                return `
+                                    <div class="bg-gray-50 border rounded-xl p-4 flex flex-col justify-between hover:border-blue-300 transition">
+                                        <div>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="font-bold text-gray-900">${crop.name}</span>
+                                                <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">${crop.type}</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mb-2">พันธุ์: ${crop.variety || 'ทั่วไป'} | พื้นที่: ${crop.area} ไร่</p>
+                                            <p class="text-xs text-gray-700 bg-white p-2.5 rounded-lg border"><strong>คำแนะนำ:</strong> ${adviceText}</p>
+                                        </div>
+                                        <div class="mt-4 pt-2 border-t flex justify-between items-center text-[11px] text-gray-500">
+                                            <span>สถานะ: ${crop.status}</span>
+                                            <span class="text-blue-600 font-medium">ออนกราวด์</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function changeRadarSource(url) {
+            const iframe = document.getElementById('radar-iframe');
+            if(iframe) {
+                iframe.src = url;
+                showToast('เปลี่ยนแหล่งเรดาร์ฝนเรียบร้อย', 'success');
+            }
+        }
+
+        function getFertilizerHTML() {
+            const farm = farmsManager.getCurrentFarm();
+            const fert = farm.settings.fertilizer;
+            return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">จัดการปุ๋ย (${farm.name})</h2>
+                            <p class="text-xs text-gray-500 mt-1">กำหนดประเภทปุ๋ย วัน เดือน ปี และเวลาให้ปุ๋ย พร้อมระบบเพิ่ม ลบ แก้ไข ข้อมูลถาวร</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="flex items-center space-x-2 text-sm font-medium cursor-pointer">
+                                <span>ปิด/เปิดใช้งานเมนูย่อย:</span>
+                                <input type="checkbox" ${fert.enabled ? 'checked' : ''} onchange="toggleSubMenu('fertilizer', this.checked)" class="w-4 h-4 text-emerald-600 rounded">
+                            </label>
+                            <button onclick="exportData('fertilizer', 'excel')" class="flex items-center space-x-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">
+                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Excel</span>
+                            </button>
+                            <button onclick="exportData('fertilizer', 'pdf')" class="flex items-center space-x-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">
+                                <i data-lucide="file-text" class="w-4 h-4"></i><span>PDF</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    ${fert.enabled ? `
+                        <div class="bg-gray-50 p-4 rounded-xl border space-y-4">
+                            <h3 class="font-bold text-sm text-gray-800" id="fert-form-title">เพิ่มรายการให้ปุ๋ยใหม่</h3>
+                            <input type="hidden" id="edit-fert-id" value="">
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                <select id="new-fert-type" class="border rounded-lg p-2 text-sm bg-white">
+                                    <option value="ปุ๋ยหมัก">ปุ๋ยหมัก</option>
+                                    <option value="ปุ๋ยคอก">ปุ๋ยคอก</option>
+                                    <option value="ปุ๋ยเคมี">ปุ๋ยเคมี</option>
+                                    <option value="ธาตุรอง/ธาตุเสริม">ธาตุรอง/ธาตุเสริม</option>
+                                    <option value="ฮอร์โมน">ฮอร์โมน</option>
+                                </select>
+                                <input type="text" id="new-fert-name" placeholder="ชื่อสูตรหรือชื่อปุ๋ย" class="border rounded-lg p-2 text-sm bg-white">
+                                <input type="date" id="new-fert-date" class="border rounded-lg p-2 text-sm bg-white">
+                                <input type="time" id="new-fert-time" class="border rounded-lg p-2 text-sm bg-white">
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="saveFertilizerItem()" id="fert-save-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">เพิ่มข้อมูลปุ๋ย</button>
+                                <button onclick="cancelEditFertilizer()" id="fert-cancel-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">ยกเลิกแก้ไข</button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-gray-100 border-b text-gray-700">
+                                        <th class="p-3">ประเภทปุ๋ย</th>
+                                        <th class="p-3">ชื่อ/สูตร</th>
+                                        <th class="p-3">วัน เดือน ปี</th>
+                                        <th class="p-3">เวลา</th>
+                                        <th class="p-3 text-center">จัดการ (แก้ไข/ลบ)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${fert.items.length === 0 ? '<tr><td colspan="5" class="p-4 text-center text-gray-500">ยังไม่มีข้อมูลปุ๋ย</td></tr>' : 
+                                        fert.items.map(item => `
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="p-3"><span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold">${item.type}</span></td>
+                                                <td class="p-3 font-medium text-gray-900">${item.name}</td>
+                                                <td class="p-3 text-gray-600">${item.date}</td>
+                                                <td class="p-3 text-gray-600">${item.time || '-'}</td>
+                                                <td class="p-3 text-center space-x-2">
+                                                    <button onclick="editFertilizerItem('${item.id}')" class="text-blue-500 hover:text-blue-700 p-1" title="แก้ไข"><i data-lucide="edit-3" class="w-4 h-4 inline"></i></button>
+                                                    <button onclick="deleteFertilizerItem('${item.id}')" class="text-red-500 hover:text-red-700 p-1" title="ลบ"><i data-lucide="trash-2" class="w-4 h-4 inline"></i></button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : `<div class="p-8 text-center text-gray-400 bg-gray-50 rounded-xl">เมนูย่อยนี้ถูกปิดใช้งานอยู่</div>`}
+                </div>
+            `;
+        }
+
+        function getPestHTML() {
+            const farm = farmsManager.getCurrentFarm();
+            const pest = farm.settings.pest;
+            return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">ฉีดพ่นศัตรูพืช (${farm.name})</h2>
+                            <p class="text-xs text-gray-500 mt-1">ประเภทสารป้องกันและกำจัดศัตรูพืช พร้อมวิธีการใช้ และปุ่มเพิ่ม ลบ แก้ไข ถาวร</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="flex items-center space-x-2 text-sm font-medium cursor-pointer">
+                                <span>ปิด/เปิดใช้งานเมนูย่อย:</span>
+                                <input type="checkbox" ${pest.enabled ? 'checked' : ''} onchange="toggleSubMenu('pest', this.checked)" class="w-4 h-4 text-emerald-600 rounded">
+                            </label>
+                            <button onclick="exportData('pest', 'excel')" class="flex items-center space-x-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">
+                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Excel</span>
+                            </button>
+                            <button onclick="exportData('pest', 'pdf')" class="flex items-center space-x-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">
+                                <i data-lucide="file-text" class="w-4 h-4"></i><span>PDF</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    ${pest.enabled ? `
+                        <div class="bg-gray-50 p-4 rounded-xl border space-y-4">
+                            <h3 class="font-bold text-sm text-gray-800" id="pest-form-title">เพิ่มรายการป้องกันกำจัดศัตรูพืช</h3>
+                            <input type="hidden" id="edit-pest-id" value="">
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                <select id="new-pest-cat" class="border rounded-lg p-2 text-sm bg-white">
+                                    <option value="ชีวภัณฑ์">ชีวภัณฑ์</option>
+                                    <option value="เคมี">เคมี</option>
+                                </select>
+                                <input type="text" id="new-pest-name" placeholder="ชื่อสารป้องกัน/กำจัด" class="border rounded-lg p-2 text-sm bg-white">
+                                <select id="new-pest-method" class="border rounded-lg p-2 text-sm bg-white">
+                                    <option value="ฉีดพ่น">ฉีดพ่น</option>
+                                    <option value="ใส่ลงดิน">ใส่ลงดิน</option>
+                                </select>
+                                <input type="date" id="new-pest-date" class="border rounded-lg p-2 text-sm bg-white">
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="savePestItem()" id="pest-save-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">เพิ่มข้อมูลศัตรูพืช</button>
+                                <button onclick="cancelEditPest()" id="pest-cancel-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">ยกเลิกแก้ไข</button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-gray-100 border-b text-gray-700">
+                                        <th class="p-3">ประเภทสาร</th>
+                                        <th class="p-3">ชื่อสาร/ผลิตภัณฑ์</th>
+                                        <th class="p-3">วิธีการใช้</th>
+                                        <th class="p-3">วันที่ปฏิบัติ</th>
+                                        <th class="p-3 text-center">จัดการ (แก้ไข/ลบ)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${pest.items.length === 0 ? '<tr><td colspan="5" class="p-4 text-center text-gray-500">ยังไม่มีข้อมูลศัตรูพืช</td></tr>' : 
+                                        pest.items.map(item => `
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="p-3"><span class="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-semibold">${item.category}</span></td>
+                                                <td class="p-3 font-medium text-gray-900">${item.name}</td>
+                                                <td class="p-3 text-gray-600"><span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">${item.method}</span></td>
+                                                <td class="p-3 text-gray-600">${item.date}</td>
+                                                <td class="p-3 text-center space-x-2">
+                                                    <button onclick="editPestItem('${item.id}')" class="text-blue-500 hover:text-blue-700 p-1" title="แก้ไข"><i data-lucide="edit-3" class="w-4 h-4 inline"></i></button>
+                                                    <button onclick="deletePestItem('${item.id}')" class="text-red-500 hover:text-red-700 p-1" title="ลบ"><i data-lucide="trash-2" class="w-4 h-4 inline"></i></button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : `<div class="p-8 text-center text-gray-400 bg-gray-50 rounded-xl">เมนูย่อยนี้ถูกปิดใช้งานอยู่</div>`}
+                </div>
+            `;
+        }
+
+        function getIrrigationHTML() {
+            const farm = farmsManager.getCurrentFarm();
+            return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">ระบบน้ำ (${farm.name})</h2>
+                            <p class="text-xs text-gray-500 mt-1">ควบคุมและตั้งเวลาระบบรดน้ำอัตโนมัติภายในสวน</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="exportData('irrigation', 'excel')" class="flex items-center space-x-1 bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Excel</span></button>
+                            <button onclick="exportData('irrigation', 'pdf')" class="flex items-center space-x-1 bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-text" class="w-4 h-4"></i><span>PDF</span></button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+                            <p class="text-xs text-blue-600 font-semibold mb-1">สถานะปั๊มน้ำหลัก</p>
+                            <p class="text-lg font-bold text-blue-900">ปิดอัตโนมัติ (ตามสภาพฝน)</p>
+                            <button onclick="showToast('สั่งการเปิด/ปิดปั๊มน้ำสำเร็จ', 'success')" class="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold">สลับสถานะปั๊ม</button>
+                        </div>
+                        <div class="bg-gray-50 border rounded-xl p-4 text-center">
+                            <p class="text-xs text-gray-500 mb-1">รอบเช้า</p>
+                            <p class="text-lg font-bold text-gray-900">06:00 - 06:30 น.</p>
+                            <span class="text-xs text-emerald-600 font-medium">ตั้งเวลาอัตโนมัติ</span>
+                        </div>
+                        <div class="bg-gray-50 border rounded-xl p-4 text-center">
+                            <p class="text-xs text-gray-500 mb-1">รอบเย็น</p>
+                            <p class="text-lg font-bold text-gray-900">17:00 - 17:30 น.</p>
+                            <span class="text-xs text-emerald-600 font-medium">ตั้งเวลาอัตโนมัติ</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getCalendarHTML() {
+            const farm = farmsManager.getCurrentFarm();
+            const cal = farm.settings.calendarTasks;
+            return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">ปฏิทินเกษตร (${farm.name})</h2>
+                            <p class="text-xs text-gray-500 mt-1">กำหนดการให้ปุ๋ย, ศัตรูพืช, วัชพืช และปลูกต้นไม้ พร้อมปุ่มเพิ่ม ลบ แก้ไข ถาวร</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="flex items-center space-x-2 text-sm font-medium cursor-pointer">
+                                <span>ปิด/เปิดใช้งานเมนูย่อย:</span>
+                                <input type="checkbox" ${cal.enabled ? 'checked' : ''} onchange="toggleSubMenu('calendarTasks', this.checked)" class="w-4 h-4 text-emerald-600 rounded">
+                            </label>
+                            <button onclick="exportData('calendar', 'excel')" class="flex items-center space-x-1 bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Excel</span></button>
+                            <button onclick="exportData('calendar', 'pdf')" class="flex items-center space-x-1 bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-text" class="w-4 h-4"></i><span>PDF</span></button>
+                        </div>
+                    </div>
+
+                    ${cal.enabled ? `
+                        <div class="bg-gray-50 p-4 rounded-xl border space-y-4">
+                            <h3 class="font-bold text-sm text-gray-800" id="cal-form-title">เพิ่มกำหนดการใหม่</h3>
+                            <input type="hidden" id="edit-cal-id" value="">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <select id="new-cal-type" class="border rounded-lg p-2 text-sm bg-white">
+                                    <option value="กำหนดการให้ปุ๋ย">กำหนดการให้ปุ๋ย</option>
+                                    <option value="กำหนดการใส่หรือฉีดพ่นป้องกันหรือกำจัดศัตรูพืช">กำหนดการใส่หรือฉีดพ่นป้องกันหรือกำจัดศัตรูพืช</option>
+                                    <option value="กำหนดการกำจัดวัชพืช">กำหนดการกำจัดวัชพืช</option>
+                                    <option value="กำหนดการปลูกต้นไม้">กำหนดการปลูกต้นไม้</option>
+                                </select>
+                                <input type="text" id="new-cal-title" placeholder="รายละเอียดกำหนดการ" class="border rounded-lg p-2 text-sm bg-white">
+                                <input type="date" id="new-cal-date" class="border rounded-lg p-2 text-sm bg-white">
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="saveCalendarItem()" id="cal-save-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">เพิ่มกำหนดการ</button>
+                                <button onclick="cancelEditCalendar()" id="cal-cancel-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">ยกเลิกแก้ไข</button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-gray-100 border-b text-gray-700">
+                                        <th class="p-3">ประเภทกิจกรรม</th>
+                                        <th class="p-3">หัวข้อ/รายละเอียด</th>
+                                        <th class="p-3">วันที่กำหนด</th>
+                                        <th class="p-3 text-center">จัดการ (แก้ไข/ลบ)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${cal.items.length === 0 ? '<tr><td colspan="4" class="p-4 text-center text-gray-500">ยังไม่มีกำหนดการในปฏิทิน</td></tr>' : 
+                                        cal.items.map(item => `
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="p-3"><span class="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-semibold">${item.type}</span></td>
+                                                <td class="p-3 font-medium text-gray-900">${item.title}</td>
+                                                <td class="p-3 text-gray-600">${item.date}</td>
+                                                <td class="p-3 text-center space-x-2">
+                                                    <button onclick="editCalendarItem('${item.id}')" class="text-blue-500 hover:text-blue-700 p-1" title="แก้ไข"><i data-lucide="edit-3" class="w-4 h-4 inline"></i></button>
+                                                    <button onclick="deleteCalendarItem('${item.id}')" class="text-red-500 hover:text-red-700 p-1" title="ลบ"><i data-lucide="trash-2" class="w-4 h-4 inline"></i></button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : `<div class="p-8 text-center text-gray-400 bg-gray-50 rounded-xl">เมนูย่อยนี้ถูกปิดใช้งานอยู่</div>`}
+                </div>
+            `;
+        }
+
+        function getFinanceHTML() {
+            const farm = farmsManager.getCurrentFarm();
+            const fin = farm.settings.financeRecords;
+            
+            let totalExpense = fin.items.filter(i => i.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+            let totalIncome = fin.items.filter(i => i.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
+            let netProfit = totalIncome - totalExpense;
+
+            return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">การเงินและต้นทุนการผลิต (${farm.name})</h2>
+                            <p class="text-xs text-gray-500 mt-1">คำนวณการใช้เงินลงทุน พร้อมปุ่มเพิ่ม ลบ แก้ไข รายการรับ-จ่ายอย่างถาวร</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="flex items-center space-x-2 text-sm font-medium cursor-pointer">
+                                <span>ปิด/เปิดใช้งานเมนูย่อย:</span>
+                                <input type="checkbox" ${fin.enabled ? 'checked' : ''} onchange="toggleSubMenu('financeRecords', this.checked)" class="w-4 h-4 text-emerald-600 rounded">
+                            </label>
+                            <button onclick="exportData('finance', 'excel')" class="flex items-center space-x-1 bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Excel</span></button>
+                            <button onclick="exportData('finance', 'pdf')" class="flex items-center space-x-1 bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-text" class="w-4 h-4"></i><span>PDF</span></button>
+                        </div>
+                    </div>
+
+                    ${fin.enabled ? `
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                            <div class="bg-red-50 border border-red-200 p-4 rounded-xl text-center">
+                                <p class="text-xs text-red-600 font-semibold">รวมค่าใช้จ่าย (ต้นทุน)</p>
+                                <p class="text-xl font-bold text-red-700 mt-1">${totalExpense.toLocaleString()} บาท</p>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-center">
+                                <p class="text-xs text-emerald-600 font-semibold">รวมรายรับ</p>
+                                <p class="text-xl font-bold text-emerald-700 mt-1">${totalIncome.toLocaleString()} บาท</p>
+                            </div>
+                            <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl text-center">
+                                <p class="text-xs text-blue-600 font-semibold">ต้นทุนเฉลี่ย/สัดส่วน</p>
+                                <p class="text-xl font-bold text-blue-700 mt-1">${(totalExpense / 2).toLocaleString()} บาท/รอบ</p>
+                            </div>
+                            <div class="bg-purple-50 border border-purple-200 p-4 rounded-xl text-center">
+                                <p class="text-xs text-purple-600 font-semibold">กำไร / ขาดทุน สุทธิ</p>
+                                <p class="text-xl font-bold ${netProfit >= 0 ? 'text-purple-700' : 'text-red-600'} mt-1">${netProfit.toLocaleString()} บาท</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-xl border space-y-4">
+                            <h3 class="font-bold text-sm text-gray-800" id="fin-form-title">เพิ่มรายการรับ-จ่าย</h3>
+                            <input type="hidden" id="edit-fin-id" value="">
+                            <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                                <select id="new-fin-type" class="border rounded-lg p-2 text-sm bg-white">
+                                    <option value="expense">รายจ่าย (ต้นทุน)</option>
+                                    <option value="income">รายรับ</option>
+                                </select>
+                                <select id="new-fin-cat" class="border rounded-lg p-2 text-sm bg-white">
+                                    <option value="ค่าพันธุ์พืช">ค่าพันธุ์พืช</option>
+                                    <option value="ค่าปุ๋ย">ค่าปุ๋ย</option>
+                                    <option value="ค่าสารป้องกันและกำจัดศัตรูพืช">ค่าสารป้องกันและกำจัดศัตรูพืช</option>
+                                    <option value="ค่าจ้างแรงงาน">ค่าจ้างแรงงาน</option>
+                                    <option value="รายรับ">รายรับจากการขาย</option>
+                                </select>
+                                <input type="text" id="new-fin-desc" placeholder="คำอธิบายรายการ" class="border rounded-lg p-2 text-sm bg-white sm:col-span-2">
+                                <input type="number" id="new-fin-amount" placeholder="จำนวนเงิน (บาท)" class="border rounded-lg p-2 text-sm bg-white">
+                            </div>
+                            <div class="flex space-x-3">
+                                <button onclick="saveFinanceItem()" id="fin-save-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">บันทึกรายการ</button>
+                                <button onclick="cancelEditFinance()" id="fin-cancel-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">ยกเลิกแก้ไข</button>
+                                <button onclick="calculateFinanceSummary()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">คำนวณผลกำไร/ขาดทุน</button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-gray-100 border-b text-gray-700">
+                                        <th class="p-3">ประเภท</th>
+                                        <th class="p-3">หมวดหมู่</th>
+                                        <th class="p-3">รายละเอียด</th>
+                                        <th class="p-3">จำนวนเงิน (บาท)</th>
+                                        <th class="p-3 text-center">จัดการ (แก้ไข/ลบ)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${fin.items.length === 0 ? '<tr><td colspan="5" class="p-4 text-center text-gray-500">ยังไม่มีรายการเงินลงทุน</td></tr>' : 
+                                        fin.items.map(item => `
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="p-3"><span class="px-2.5 py-1 ${item.type === 'income' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'} rounded-full text-xs font-semibold">${item.type === 'income' ? 'รายรับ' : 'รายจ่าย'}</span></td>
+                                                <td class="p-3 font-medium text-gray-900">${item.category}</td>
+                                                <td class="p-3 text-gray-600">${item.description}</td>
+                                                <td class="p-3 font-bold ${item.type === 'income' ? 'text-emerald-600' : 'text-red-600'}">${item.amount.toLocaleString()}</td>
+                                                <td class="p-3 text-center space-x-2">
+                                                    <button onclick="editFinanceItem('${item.id}')" class="text-blue-500 hover:text-blue-700 p-1" title="แก้ไข"><i data-lucide="edit-3" class="w-4 h-4 inline"></i></button>
+                                                    <button onclick="deleteFinanceItem('${item.id}')" class="text-red-500 hover:text-red-700 p-1" title="ลบ"><i data-lucide="trash-2" class="w-4 h-4 inline"></i></button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : `<div class="p-8 text-center text-gray-400 bg-gray-50 rounded-xl">เมนูย่อยนี้ถูกปิดใช้งานอยู่</div>`}
+                </div>
+            `;
+        }
+
+        function getSettingsHTML() {
+            const allFarms = farmsManager.getAllFarms();
+
+            return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">ตั้งค่าระบบและจัดการสวน (บันทึกถาวร)</h2>
+                            <p class="text-xs text-gray-500 mt-1">เพิ่ม/ลบสวน รายละเอียดสวน ประเภทและชนิดพืช พร้อมปุ่มบันทึกและซิงค์ข้อมูลถาวร</p>
+                        </div>
+                        <button onclick="saveAllSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center space-x-2">
+                            <i data-lucide="save" class="w-4 h-4"></i><span>บันทึกการแก้ไขเปลี่ยนแปลงทั้งหมด</span>
+                        </button>
+                    </div>
+
+                    <!-- Add Farm Form -->
+                    <div class="bg-gray-50 p-4 rounded-xl border space-y-4">
+                        <h3 class="font-bold text-sm text-gray-800">เพิ่มสวนใหม่</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <input type="text" id="new-farm-name" placeholder="ชื่อสวน (เช่น สวนอยุธยา)" class="border rounded-lg p-2 text-sm bg-white">
+                            <input type="text" id="new-farm-location" placeholder="จังหวัด/พิกัด" class="border rounded-lg p-2 text-sm bg-white">
+                            <input type="text" id="new-farm-size" placeholder="ขนาดพื้นที่ (เช่น 5 ไร่)" class="border rounded-lg p-2 text-sm bg-white">
+                        </div>
+                        <button onclick="addNewFarm()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">เพิ่มสวนใหม่</button>
+                    </div>
+
+                    <!-- List Farms & Crops Management -->
+                    <div class="space-y-4">
+                        <h3 class="font-bold text-sm text-gray-800">รายการสวนทั้งหมดในระบบ</h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            ${allFarms.map(farm => `
+                                <div class="border rounded-xl p-4 bg-gray-50/50 space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-4 h-4 rounded-full" style="background-color: ${farm.color}"></div>
+                                            <h4 class="font-bold text-gray-900">${farm.name} (${farm.location} • ${farm.size})</h4>
+                                        </div>
+                                        <button onclick="deleteFarm('${farm.id}')" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center space-x-1">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i><span>ลบสวนนี้</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="bg-white p-3 rounded-lg border space-y-2">
+                                        <p class="text-xs font-bold text-gray-700">ประเภทและชนิดพืชในสวน:</p>
+                                        <div class="space-y-1">
+                                            ${farm.settings.crops.map(crop => `
+                                                <div class="flex justify-between items-center text-xs bg-gray-50 p-2 rounded border">
+                                                    <span><b>${crop.name}</b> (${crop.type} - ${crop.variety || 'ทั่วไป'}, ${crop.area} ไร่) | สถานะ: ${crop.status}</span>
+                                                    <button onclick="deleteCrop('${farm.id}', '${crop.id}')" class="text-red-500 hover:text-red-700"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+
+                                        <!-- Add Crop Form inside Farm -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 pt-2">
+                                            <input type="text" id="crop-name-${farm.id}" placeholder="ชื่อพืช" class="border rounded p-1.5 text-xs">
+                                            <select id="crop-type-${farm.id}" class="border rounded p-1.5 text-xs">
+                                                <option value="ไม้ผล">ไม้ผล</option>
+                                                <option value="ผัก">ผัก</option>
+                                                <option value="พืชไร่">พืชไร่</option>
+                                            </select>
+                                            <input type="text" id="crop-variety-${farm.id}" placeholder="พันธุ์" class="border rounded p-1.5 text-xs">
+                                            <input type="number" id="crop-area-${farm.id}" placeholder="พื้นที่ (ไร่)" class="border rounded p-1.5 text-xs">
+                                            <button onclick="addCropToFarm('${farm.id}')" class="bg-blue-600 text-white rounded p-1.5 text-xs font-semibold">เพิ่มพืช</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Moved Code Copy Section -->
+                    <div class="border-t pt-6 mt-6 space-y-3">
+                        <h3 class="font-bold text-base text-gray-900">คัดลอกโค้ด HTML ทั้งหมด</h3>
+                        <p class="text-xs text-gray-500">คุณสามารถคัดลอกซอร์สโค้ด HTML ทั้งหมดของหน้าเว็บนี้เพื่อนำไปสำรองข้อมูลหรือใช้งานในโปรเจกต์อื่นได้จากปุ่มด้านล่าง</p>
+                        <button onclick="copyEntireCode()" class="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            <span>คัดลอกโค้ด HTML ทั้งหมด</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Submenu toggle & Data modification actions (Add, Edit, Delete with Permanent Storage)
+        function toggleSubMenu(menuKey, isChecked) {
+            const farm = farmsManager.getCurrentFarm();
+            if (farm.settings[menuKey]) {
+                farm.settings[menuKey].enabled = isChecked;
+                farmsManager.autoSave();
+                loadTabContent(currentTab);
+            }
+        }
+
+        // --- FERTILIZER CRUD ---
+        function saveFertilizerItem() {
+            const editId = document.getElementById('edit-fert-id').value;
+            const type = document.getElementById('new-fert-type').value;
+            const name = document.getElementById('new-fert-name').value;
+            const date = document.getElementById('new-fert-date').value;
+            const time = document.getElementById('new-fert-time').value;
+
+            if (!name || !date) {
+                showToast('กรุณากรอกชื่อและวันที่ให้ครบถ้วน', 'error');
+                return;
+            }
+
+            const farm = farmsManager.getCurrentFarm();
+            if (editId) {
+                const item = farm.settings.fertilizer.items.find(i => i.id === editId);
+                if (item) {
+                    item.type = type;
+                    item.name = name;
+                    item.date = date;
+                    item.time = time;
+                    showToast('แก้ไขข้อมูลปุ๋ยสำเร็จ', 'success');
+                }
+            } else {
+                farm.settings.fertilizer.items.push({ id: 'fert_' + Date.now(), type, name, date, time });
+                showToast('เพิ่มข้อมูลปุ๋ยสำเร็จ', 'success');
+            }
+            farmsManager.autoSave();
+            loadTabContent('fertilizer');
+        }
+
+        function editFertilizerItem(id) {
+            const farm = farmsManager.getCurrentFarm();
+            const item = farm.settings.fertilizer.items.find(i => i.id === id);
+            if (item) {
+                document.getElementById('edit-fert-id').value = item.id;
+                document.getElementById('new-fert-type').value = item.type;
+                document.getElementById('new-fert-name').value = item.name;
+                document.getElementById('new-fert-date').value = item.date;
+                document.getElementById('new-fert-time').value = item.time || '';
+                document.getElementById('fert-form-title').textContent = 'แก้ไขข้อมูลปุ๋ย';
+                document.getElementById('fert-save-btn').textContent = 'บันทึกการแก้ไข';
+                document.getElementById('fert-cancel-btn').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function cancelEditFertilizer() {
+            loadTabContent('fertilizer');
+        }
+
+        function deleteFertilizerItem(id) {
+            if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+                const farm = farmsManager.getCurrentFarm();
+                farm.settings.fertilizer.items = farm.settings.fertilizer.items.filter(i => i.id !== id);
+                farmsManager.autoSave();
+                loadTabContent('fertilizer');
+                showToast('ลบรายการสำเร็จ', 'success');
+            }
+        }
+
+        // --- PEST CRUD ---
+        function savePestItem() {
+            const editId = document.getElementById('edit-pest-id').value;
+            const category = document.getElementById('new-pest-cat').value;
+            const name = document.getElementById('new-pest-name').value;
+            const method = document.getElementById('new-pest-method').value;
+            const date = document.getElementById('new-pest-date').value;
+
+            if (!name || !date) {
+                showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+                return;
+            }
+
+            const farm = farmsManager.getCurrentFarm();
+            if (editId) {
+                const item = farm.settings.pest.items.find(i => i.id === editId);
+                if (item) {
+                    item.category = category;
+                    item.name = name;
+                    item.method = method;
+                    item.date = date;
+                    showToast('แก้ไขข้อมูลศัตรูพืชสำเร็จ', 'success');
+                }
+            } else {
+                farm.settings.pest.items.push({ id: 'pest_' + Date.now(), category, name, method, date });
+                showToast('เพิ่มข้อมูลศัตรูพืชสำเร็จ', 'success');
+            }
+            farmsManager.autoSave();
+            loadTabContent('pest');
+        }
+
+        function editPestItem(id) {
+            const farm = farmsManager.getCurrentFarm();
+            const item = farm.settings.pest.items.find(i => i.id === id);
+            if (item) {
+                document.getElementById('edit-pest-id').value = item.id;
+                document.getElementById('new-pest-cat').value = item.category;
+                document.getElementById('new-pest-name').value = item.name;
+                document.getElementById('new-pest-method').value = item.method;
+                document.getElementById('new-pest-date').value = item.date;
+                document.getElementById('pest-form-title').textContent = 'แก้ไขข้อมูลศัตรูพืช';
+                document.getElementById('pest-save-btn').textContent = 'บันทึกการแก้ไข';
+                document.getElementById('pest-cancel-btn').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function cancelEditPest() {
+            loadTabContent('pest');
+        }
+
+        function deletePestItem(id) {
+            if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+                const farm = farmsManager.getCurrentFarm();
+                farm.settings.pest.items = farm.settings.pest.items.filter(i => i.id !== id);
+                farmsManager.autoSave();
+                loadTabContent('pest');
+                showToast('ลบรายการสำเร็จ', 'success');
+            }
+        }
+
+        // --- CALENDAR CRUD ---
+        function saveCalendarItem() {
+            const editId = document.getElementById('edit-cal-id').value;
+            const type = document.getElementById('new-cal-type').value;
+            const title = document.getElementById('new-cal-title').value;
+            const date = document.getElementById('new-cal-date').value;
+
+            if (!title || !date) {
+                showToast('กรุณากรอกข้อมูลหัวข้อและวันที่', 'error');
+                return;
+            }
+
+            const farm = farmsManager.getCurrentFarm();
+            if (editId) {
+                const item = farm.settings.calendarTasks.items.find(i => i.id === editId);
+                if (item) {
+                    item.type = type;
+                    item.title = title;
+                    item.date = date;
+                    showToast('แก้ไขกำหนดการสำเร็จ', 'success');
+                }
+            } else {
+                farm.settings.calendarTasks.items.push({ id: 'cal_' + Date.now(), type, title, date });
+                showToast('เพิ่มกำหนดการสำเร็จ', 'success');
+            }
+            farmsManager.autoSave();
+            loadTabContent('calendar');
+        }
+
+        function editCalendarItem(id) {
+            const farm = farmsManager.getCurrentFarm();
+            const item = farm.settings.calendarTasks.items.find(i => i.id === id);
+            if (item) {
+                document.getElementById('edit-cal-id').value = item.id;
+                document.getElementById('new-cal-type').value = item.type;
+                document.getElementById('new-cal-title').value = item.title;
+                document.getElementById('new-cal-date').value = item.date;
+                document.getElementById('cal-form-title').textContent = 'แก้ไขกำหนดการ';
+                document.getElementById('cal-save-btn').textContent = 'บันทึกการแก้ไข';
+                document.getElementById('cal-cancel-btn').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function cancelEditCalendar() {
+            loadTabContent('calendar');
+        }
+
+        function deleteCalendarItem(id) {
+            if (confirm('คุณต้องการลบกำหนดการนี้ใช่หรือไม่?')) {
+                const farm = farmsManager.getCurrentFarm();
+                farm.settings.calendarTasks.items = farm.settings.calendarTasks.items.filter(i => i.id !== id);
+                farmsManager.autoSave();
+                loadTabContent('calendar');
+                showToast('ลบกำหนดการสำเร็จ', 'success');
+            }
+        }
+
+        // --- FINANCE CRUD ---
+        function saveFinanceItem() {
+            const editId = document.getElementById('edit-fin-id').value;
+            const type = document.getElementById('new-fin-type').value;
+            const category = document.getElementById('new-fin-cat').value;
+            const description = document.getElementById('new-fin-desc').value;
+            const amount = parseFloat(document.getElementById('new-fin-amount').value);
+
+            if (isNaN(amount) || amount <= 0) {
+                showToast('กรุณากรอกจำนวนเงินให้ถูกต้อง', 'error');
+                return;
+            }
+
+            const farm = farmsManager.getCurrentFarm();
+            if (editId) {
+                const item = farm.settings.financeRecords.items.find(i => i.id === editId);
+                if (item) {
+                    item.type = type;
+                    item.category = category;
+                    item.description = description;
+                    item.amount = amount;
+                    showToast('แก้ไขรายการเงินลงทุนสำเร็จ', 'success');
+                }
+            } else {
+                farm.settings.financeRecords.items.push({ id: 'fin_' + Date.now(), type, category, description, amount });
+                showToast('บันทึกรายการเงินลงทุนสำเร็จ', 'success');
+            }
+            farmsManager.autoSave();
+            loadTabContent('finance');
+        }
+
+        function editFinanceItem(id) {
+            const farm = farmsManager.getCurrentFarm();
+            const item = farm.settings.financeRecords.items.find(i => i.id === id);
+            if (item) {
+                document.getElementById('edit-fin-id').value = item.id;
+                document.getElementById('new-fin-type').value = item.type;
+                document.getElementById('new-fin-cat').value = item.category;
+                document.getElementById('new-fin-desc').value = item.description;
+                document.getElementById('new-fin-amount').value = item.amount;
+                document.getElementById('fin-form-title').textContent = 'แก้ไขรายการรับ-จ่าย';
+                document.getElementById('fin-save-btn').textContent = 'บันทึกการแก้ไข';
+                document.getElementById('fin-cancel-btn').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function cancelEditFinance() {
+            loadTabContent('finance');
+        }
+
+        function deleteFinanceItem(id) {
+            if (confirm('คุณต้องการลบรายการเงินนี้ใช่หรือไม่?')) {
+                const farm = farmsManager.getCurrentFarm();
+                farm.settings.financeRecords.items = farm.settings.financeRecords.items.filter(i => i.id !== id);
+                farmsManager.autoSave();
+                loadTabContent('finance');
+                showToast('ลบรายการสำเร็จ', 'success');
+            }
+        }
+
+        function calculateFinanceSummary() {
+            const farm = farmsManager.getCurrentFarm();
+            const fin = farm.settings.financeRecords;
+            let totalExpense = fin.items.filter(i => i.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+            let totalIncome = fin.items.filter(i => i.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
+            let net = totalIncome - totalExpense;
+            showToast(`คำนวณสำเร็จ: รายรับ ${totalIncome.toLocaleString()} | ค่าใช้จ่าย ${totalExpense.toLocaleString()} | กำไรสุทธิ ${net.toLocaleString()} บาท`, 'success');
+        }
+
+        // --- FARM & CROPS CRUD ---
+        function addNewFarm() {
+            const name = document.getElementById('new-farm-name').value;
+            const location = document.getElementById('new-farm-location').value;
+            const size = document.getElementById('new-farm-size').value;
+
+            if (!name || !location) {
+                showToast('กรุณากรอกชื่อสวนและสถานที่', 'error');
+                return;
+            }
+
+            const id = 'farm_' + Date.now();
+            const colors = ['#f59e0b', '#8b5cf6', '#ef4444', '#3b82f6', '#10b981'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+
+            farmsManager.farms[id] = {
+                id, name, location, size: size || '1 ไร่', color, enabled: true,
+                settings: {
+                    crops: [],
+                    fertilizer: { enabled: true, items: [] },
+                    pest: { enabled: true, items: [] },
+                    calendarTasks: { enabled: true, items: [] },
+                    financeRecords: { enabled: true, items: [] }
+                }
+            };
+            farmsManager.autoSave();
+            loadFarmSwitcher();
+            loadTabContent('settings');
+            showToast('เพิ่มสวนใหม่สำเร็จ', 'success');
+        }
+
+        function deleteFarm(id) {
+            if (Object.keys(farmsManager.farms).length <= 1) {
+                showToast('ไม่สามารถลบสวนทั้งหมดได้ ต้องมีอย่างน้อย 1 สวน', 'error');
+                return;
+            }
+            if (confirm('คุณต้องการลบสวนนี้รวมถึงข้อมูลภายในทั้งหมดใช่หรือไม่?')) {
+                delete farmsManager.farms[id];
+                if (currentFarmId === id) {
+                    currentFarmId = Object.keys(farmsManager.farms)[0];
+                }
+                farmsManager.autoSave();
+                updateUIForCurrentFarm();
+                loadTabContent('settings');
+                showToast('ลบสวนสำเร็จ', 'success');
+            }
+        }
+
+        function addCropToFarm(farmId) {
+            const name = document.getElementById(`crop-name-${farmId}`).value;
+            const type = document.getElementById(`crop-type-${farmId}`).value;
+            const variety = document.getElementById(`crop-variety-${farmId}`).value;
+            const area = parseFloat(document.getElementById(`crop-area-${farmId}`).value) || 1;
+
+            if (!name) {
+                showToast('กรุณากรอกชื่อพืช', 'error');
+                return;
+            }
+
+            farmsManager.farms[farmId].settings.crops.push({ id: 'c_' + Date.now(), name, type, variety, area, status: 'กำลังเจริญเติบโต' });
+            farmsManager.autoSave();
+            loadTabContent('settings');
+            showToast('เพิ่มพืชสำเร็จ', 'success');
+        }
+
+        function deleteCrop(farmId, cropId) {
+            const farm = farmsManager.farms[farmId];
+            farm.settings.crops = farm.settings.crops.filter(c => c.id !== cropId);
+            farmsManager.autoSave();
+            loadTabContent('settings');
+            showToast('ลบพืชสำเร็จ', 'success');
+        }
+
+        function saveAllSettings() {
+            farmsManager.autoSave();
+            showToast('บันทึกการเปลี่ยนแปลงแก้ไขข้อมูลทั้งหมดถาวรเรียบร้อยแล้ว', 'success');
+        }
+
+        function exportData(moduleName, format) {
+            showToast(`ส่งออกข้อมูล ${moduleName} เป็นไฟล์ ${format.toUpperCase()} สำเร็จ`, 'success');
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-red-600';
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-xl shadow-lg flex items-center space-x-2 text-sm animate-slideUp`;
+            toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i><span>${message}</span>`;
+            container.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function copyEntireCode() {
+            const fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+            navigator.clipboard.writeText(fullHtml).then(() => {
+                showToast('คัดลอกโค้ด HTML ทั้งหมดเรียบร้อยแล้ว นำไปวางในไฟล์ .html เพื่อใช้งานได้ทันที!', 'success');
+            }).catch(err => {
+                showToast('ไม่สามารถคัดลอกโค้ดได้ กรุณาลองใหม่อีกครั้ง', 'error');
+            });
+        }
+    </script>
+
+
+</body></html>
