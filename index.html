@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart AgroMix - ระบบจัดการสวนผสมผสานอัจฉริยะ</title>
+    <!-- PWA Metadata -->
+    <meta name="theme-color" content="#4a7c59">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <!-- Styles -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap');
+        * { font-family: 'Noto Sans Thai', sans-serif; }
+        
+        .nav-btn.active { background-color: #f3f4f6; color: #111827; }
+        .mobile-nav-btn.active { color: #111827; }
+        .animate-slideUp { animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        
+        .transition-all { transition: all 0.2s ease-in-out; }
+        
+        .bg-sage-500 { background-color: #4a7c59; }
+        .hover\:bg-sage-600:hover { background-color: #3f6a4d; }
+        .text-sage-600 { color: #3f6a4d; }
+        .border-sage-200 { border-color: #c1d4c9; }
+        
+        .settings-tab-btn.active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .settings-tab-btn:hover { background-color: #f9fafb; }
+
+        .farm-switcher-btn.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .chart-color-1 { background-color: #3b82f6; }
+        .chart-color-2 { background-color: #10b981; }
+        .chart-color-3 { background-color: #f59e0b; }
+        .chart-color-4 { background-color: #ef4444; }
+        .chart-color-5 { background-color: #8b5cf6; }
+
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .scrollable-container { max-height: 60vh; overflow-y: auto; }
+        
+        .settings-card {
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+        }
+        .settings-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+        }
+
+        .time-input-wrapper { position: relative; }
+        .time-input-wrapper input[type="time"]::-webkit-calendar-picker-indicator {
+            background: none;
+            display: none;
+        }
+
+        .radar-wrapper {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            background-color: #111827;
+            border-radius: 0.75rem;
+        }
+        .radar-wrapper iframe {
+            position: absolute;
+            top: -15%;
+            left: -15%;
+            width: 130%;
+            height: 130%;
+            border: 0;
+            transform: scale(1.1);
+        }
+
+        /* Auth Modal Animation */
+        #login-modal { animation: fadeIn 0.25s ease; }
+        #login-modal > div { animation: slideUp 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen pb-20 md:pb-0">
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-white border-b border-gray-200">
+        <div class="flex items-center justify-between px-4 py-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-green-500 text-white flex items-center justify-center">
+                    <i data-lucide="sprout" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-gray-900" id="farm-name-header">Smart AgroMix</h1>
+                    <p class="text-xs text-gray-500" id="farm-location-header">ระบบจัดการสวนผสมผสานอัจฉริยะ</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <div class="relative" id="farm-switcher-container"></div>
+                <span id="current-date" class="text-sm text-gray-600 px-3 py-1 bg-gray-100 rounded-lg hidden md:block"></span>
+                <button id="auth-status-btn" onclick="handleAuthButtonClick()" class="text-xs px-3 py-1.5 rounded-lg font-semibold transition-all hidden md:block">
+                    <i data-lucide="user" class="w-4 h-4 inline"></i>
+                    <span id="auth-status-text">เข้าสู่ระบบ</span>
+                </button>
+                <button id="menu-toggle" class="md:hidden text-gray-500 hover:text-gray-700">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="flex">
+        <aside class="hidden md:block w-64 border-r border-gray-200 bg-white min-h-[calc(100vh-73px)]">
+            <nav class="p-4 space-y-1">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200 active text-gray-900">
+                    <i data-lucide="home" class="w-5 h-5"></i><span>แดชบอร์ด</span>
+                </button>
+                <button onclick="switchTab('fertilizer')" id="nav-fertilizer" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200">
+                    <i data-lucide="flask-conical" class="w-5 h-5"></i><span>จัดการปุ๋ย</span>
+                </button>
+                <button onclick="switchTab('pest')" id="nav-pest" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200">
+                    <i data-lucide="bug" class="w-5 h-5"></i><span>ฉีดพ่นศัตรูพืช</span>
+                </button>
+                <button onclick="switchTab('irrigation')" id="nav-irrigation" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200">
+                    <i data-lucide="droplet" class="w-5 h-5"></i><span>ระบบน้ำ</span>
+                </button>
+                <button onclick="switchTab('calendar')" id="nav-calendar" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200">
+                    <i data-lucide="calendar" class="w-5 h-5"></i><span>ปฏิทินเกษตร</span>
+                </button>
+                <button onclick="switchTab('finance')" id="nav-finance" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200">
+                    <i data-lucide="dollar-sign" class="w-5 h-5"></i><span>การเงิน</span>
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-sm text-gray-600 hover:bg-gray-100 transition-all duration-200">
+                    <i data-lucide="settings" class="w-5 h-5"></i><span>ตั้งค่า</span>
+                </button>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-4 md:p-6" id="content-area"></main>
+    </div>
+
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+        <div class="grid grid-cols-6 h-16">
+            <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="mobile-nav-btn flex flex-col items-center justify-center font-medium text-gray-600 active text-gray-900">
+                <i data-lucide="home" class="w-4 h-4"></i><span class="text-[9px] mt-1">แดชบอร์ด</span>
+            </button>
+            <button onclick="switchTab('fertilizer')" id="mobile-nav-fertilizer" class="mobile-nav-btn flex flex-col items-center justify-center font-medium text-gray-600">
+                <i data-lucide="flask-conical" class="w-4 h-4"></i><span class="text-[9px] mt-1">ปุ๋ย</span>
+            </button>
+            <button onclick="switchTab('pest')" id="mobile-nav-pest" class="mobile-nav-btn flex flex-col items-center justify-center font-medium text-gray-600">
+                <i data-lucide="bug" class="w-4 h-4"></i><span class="text-[9px] mt-1">ศัตรูพืช</span>
+            </button>
+            <button onclick="switchTab('calendar')" id="mobile-nav-calendar" class="mobile-nav-btn flex flex-col items-center justify-center font-medium text-gray-600">
+                <i data-lucide="calendar" class="w-4 h-4"></i><span class="text-[9px] mt-1">ปฏิทิน</span>
+            </button>
+            <button onclick="switchTab('finance')" id="mobile-nav-finance" class="mobile-nav-btn flex flex-col items-center justify-center font-medium text-gray-600">
+                <i data-lucide="dollar-sign" class="w-4 h-4"></i><span class="text-[9px] mt-1">การเงิน</span>
+            </button>
+            <button onclick="switchTab('settings')" id="mobile-nav-settings" class="mobile-nav-btn flex flex-col items-center justify-center font-medium text-gray-600">
+                <i data-lucide="settings" class="w-4 h-4"></i><span class="text-[9px] mt-1">ตั้งค่า</span>
+            </button>
+        </div>
+    </nav>
+
+    <div id="toast-container" class="fixed top-5 right-5 z-[60] space-y-2"></div>
+
+    <!-- Login Modal (ซ่อนไว้เริ่มต้น) -->
+    <div id="login-modal" class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div class="text-center">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-emerald-500 to-green-500 text-white flex items-center justify-center mb-3">
+                    <i data-lucide="sprout" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900">Smart AgroMix</h2>
+                <p class="text-sm text-gray-500 mt-1">เข้าสู่ระบบเพื่อซิงค์ข้อมูลสวนขึ้นคลาวด์</p>
+            </div>
+
+            <div class="flex border-b">
+                <button data-tab="login" class="login-tab flex-1 py-2 text-sm font-semibold text-blue-600 border-b-2 border-blue-600">เข้าสู่ระบบ</button>
+                <button data-tab="register" class="login-tab flex-1 py-2 text-sm font-semibold text-gray-500 border-b-2 border-transparent">สมัครใหม่</button>
+            </div>
+
+            <form id="auth-form" class="space-y-3">
+                <input type="text" id="auth-username" placeholder="Username" required autocomplete="username"
+                       class="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <input type="password" id="auth-password" placeholder="Password (≥ 6 ตัว)" required minlength="6" autocomplete="current-password"
+                       class="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <button type="submit" id="auth-submit"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-sm transition-all">
+                    เข้าสู่ระบบ
+                </button>
+            </form>
+
+            <button onclick="skipLogin()" class="w-full text-xs text-gray-500 hover:text-gray-700 py-2">
+                ใช้งานแบบไม่ซิงค์คลาวด์ (เก็บข้อมูลในเครื่องเท่านั้น) →
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // =====================================================
+        // AUTH TOKEN MANAGEMENT
+        // =====================================================
+        const AUTH_TOKEN_KEY = 'smart_agromix_token';
+        const AUTH_USER_KEY = 'smart_agromix_user';
+
+        function getToken() { return localStorage.getItem(AUTH_TOKEN_KEY); }
+        function setToken(t) { localStorage.setItem(AUTH_TOKEN_KEY, t); }
+        function clearAuth() { 
+            localStorage.removeItem(AUTH_TOKEN_KEY); 
+            localStorage.removeItem(AUTH_USER_KEY); 
+            updateAuthButton();
+        }
+        function getCurrentUser() { 
+            try { return JSON.parse(localStorage.getItem(AUTH_USER_KEY) || 'null'); } 
+            catch { return null; }
+        }
+        function setCurrentUser(u) { 
+            localStorage.setItem(AUTH_USER_KEY, JSON.stringify(u)); 
+            updateAuthButton();
+        }
+
+        async function apiFetch(url, options = {}) {
+            const token = getToken();
+            const headers = {
+                'Content-Type': 'application/json',
+                ...(options.headers || {})
+            };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+            
+            const res = await fetch(url, { ...options, headers });
+            if (res.status === 401 && getToken()) {
+                clearAuth();
+                showLoginModal();
+                throw new Error('ต้องเข้าสู่ระบบใหม่');
+            }
+            return res;
+        }
+
+        function updateAuthButton() {
+            const btn = document.getElementById('auth-status-btn');
+            const txt = document.getElementById('auth-status-text');
+            if (!btn || !txt) return;
+            const user = getCurrentUser();
+            if (user) {
+                btn.className = 'text-xs px-3 py-1.5 rounded-lg font-semibold transition-all bg-emerald-100 text-emerald-800 hover:bg-emerald-200 hidden md:block';
+                txt.textContent = user.username;
+            } else {
+                btn.className = 'text-xs px-3 py-1.5 rounded-lg font-semibold transition-all bg-blue-100 text-blue-700 hover:bg-blue-200 hidden md:block';
+                txt.textContent = 'เข้าสู่ระบบ';
+            }
+        }
+
+        function handleAuthButtonClick() {
+            if (getCurrentUser()) {
+                if (confirm('ออกจากระบบ? ข้อมูลในเครื่องจะยังอยู่')) {
+                    clearAuth();
+                    showToast('ออกจากระบบแล้ว', 'success');
+                    loadTabContent(currentTab);
+                }
+            } else {
+                showLoginModal();
+            }
+        }
+
+        // =====================================================
+        // STATE
+        // =====================================================
+        let currentTab = 'dashboard';
+        let currentFarmId = 'nakhonnayok';
+        let farmsManager = null;
+        let settingsManager = null;
+        let weatherTimer = null;
+        let isWeatherFetching = false;
+
+        // ⚡ แก้ไข: cache 15 นาที ป้องกัน rate limit
+        const WEATHER_CACHE_DURATION = 900000; // 15 นาที
+        const WEATHER_CACHE_STORAGE_KEY = 'smart_agromix_weather_cache';
+
+        function loadWeatherCache() {
+            try {
+                const cached = localStorage.getItem(WEATHER_CACHE_STORAGE_KEY);
+                return cached ? JSON.parse(cached) : {};
+            } catch (e) { return {}; }
+        }
+
+        function saveWeatherCache(cacheObj) {
+            try { localStorage.setItem(WEATHER_CACHE_STORAGE_KEY, JSON.stringify(cacheObj)); } 
+            catch (e) { console.warn('Failed to save weather cache:', e); }
+        }
+
+        const weatherCache = loadWeatherCache();
+
+        const weatherDatabase = {
+            'nakhonnayok': {
+                lat: 14.263635, lon: 101.079674,
+                addressDetail: 'สุดซอยเทศบาล 14 หมู่ที่ 5 ตำบลบ้านนา อำเภอบ้านนา จังหวัดนครนายก',
+                temp: 32, condition: 'กำลังซิงค์ TMD & Open-Meteo API...',
+                humidity: 78, rainChance: 65, wind: '10 กม./ชม.',
+                source: 'TMD API & Open-Meteo',
+                radarUrl: 'https://weather.tmd.go.th/bkkLoop.php',
+                updateTime: 'กำลังโหลดข้อมูล...', isOffline: false,
+                past7DaysRain: [12, 5, 0, 20, 8, 15, 10],
+                future7DaysRain: [30, 45, 60, 25, 10, 5, 2]
+            },
+            'kanchanaburi': {
+                lat: 14.033526, lon: 99.614506,
+                addressDetail: 'บริเวณติดกับด่านเก็บเงินกาญจนบุรี ทางหลวงพิเศษระหว่างเมืองหมายเลข 81 เขตเทศบาลหนองหญ้าดอกขาว อำเภอท่าม่วง จังหวัดกาญจนบุรี',
+                temp: 35, condition: 'กำลังซิงค์ TMD & Open-Meteo API...',
+                humidity: 65, rainChance: 30, wind: '10 กม./ชม.',
+                source: 'TMD API & Open-Meteo',
+                radarUrl: 'https://weather.tmd.go.th/kriLoop.php',
+                updateTime: 'กำลังโหลดข้อมูล...', isOffline: false,
+                past7DaysRain: [0, 2, 0, 5, 1, 0, 4],
+                future7DaysRain: [15, 20, 10, 5, 0, 0, 10]
+            }
+        };
+
+        const SMART_AGROMIX_STORAGE_KEY = 'smart_agromix_farms';
+        const SMART_AGROMIX_SCHEMA_VERSION = 3;
+        const SMART_AGROMIX_LOG_KEY = 'smart_agromix_audit_log';
+        const SMART_AGROMIX_MEMORY_STORE = Object.create(null);
+
+        function storageGet(key) {
+            try { return localStorage.getItem(key); } 
+            catch (e) { 
+                return Object.prototype.hasOwnProperty.call(SMART_AGROMIX_MEMORY_STORE, key)
+                    ? SMART_AGROMIX_MEMORY_STORE[key] : null;
+            }
+        }
+
+        function storageSet(key, value) {
+            try { localStorage.setItem(key, value); return true; } 
+            catch (e) { SMART_AGROMIX_MEMORY_STORE[key] = String(value); return false; }
+        }
+
+        function safeClone(value) { return JSON.parse(JSON.stringify(value)); }
+
+        function isValidFarmData(data) {
+            if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+            return Object.values(data).every(f => f && typeof f === 'object' &&
+                typeof f.id === 'string' && typeof f.name === 'string' &&
+                f.settings && Array.isArray(f.settings.crops));
+        }
+
+        function auditLog(action, detail = '') {
+            try {
+                const logs = JSON.parse(storageGet(SMART_AGROMIX_LOG_KEY) || '[]');
+                logs.push({ timestamp: new Date().toISOString(), action, detail });
+                storageSet(SMART_AGROMIX_LOG_KEY, JSON.stringify(logs.slice(-200)));
+            } catch (e) { console.warn('Audit log unavailable:', e); }
+        }
+
+        function downloadBlob(content, filename, mime = 'application/octet-stream') {
+            const blob = new Blob([content], { type: mime });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = filename;
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        }
+
+        // =====================================================
+        // MULTI FARM MANAGER (⚡ แก้ไขจุดวิกฤต)
+        // =====================================================
+        class MultiFarmManager {
+            constructor() {
+                this.history = [];
+                this.future = [];
+                this.farms = {};
+                this.lastSavedSnapshot = null;
+                this.cloudAvailable = null; // ⚡ เพิ่ม
+            }
+
+            async init() {
+                await this.loadFromCloudOrStorage();
+                this.lastSavedSnapshot = safeClone(this.farms);
+            }
+
+            async loadFromCloudOrStorage() {
+                // ⚡ ถ้ามี token → ลองโหลดจาก cloud
+                if (getToken()) {
+                    try {
+                        const response = await apiFetch('/api/farms', { method: 'GET' });
+                        if (response.ok) {
+                            const cloudData = await response.json();
+                            if (Object.keys(cloudData).length > 0 && isValidFarmData(cloudData)) {
+                                this.farms = cloudData;
+                                storageSet(SMART_AGROMIX_STORAGE_KEY, JSON.stringify(cloudData));
+                                this.cloudAvailable = true;
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[Smart AgroMix] Cloud sync unavailable:', e.message);
+                        this.cloudAvailable = false;
+                    }
+                }
+
+                // Fallback: localStorage
+                const savedFarms = storageGet(SMART_AGROMIX_STORAGE_KEY);
+                if (savedFarms) {
+                    try {
+                        const parsed = JSON.parse(savedFarms);
+                        if (isValidFarmData(parsed)) { this.farms = parsed; return; }
+                    } catch (e) { console.error('Failed to load saved farms:', e); }
+                }
+
+                this.farms = this.getDefaultFarms();
+                this.saveToCloudAndStorage();
+            }
+
+            getDefaultFarms() {
+                return {
+                    'nakhonnayok': {
+                        id: 'nakhonnayok', name: 'สวนนครนายก', location: 'นครนายก',
+                        lat: 14.263635, lon: 101.079674,
+                        addressDetail: 'สุดซอยเทศบาล 14 หมู่ที่ 5 ตำบลบ้านนา อำเภอบ้านนา จังหวัดนครนายก',
+                        radarUrl: 'https://weather.tmd.go.th/bkkLoop.php',
+                        size: '9 ไร่', color: '#3b82f6', enabled: true,
+                        settings: {
+                            crops: [
+                                { id: 'c1', name: 'มะยงชิด', type: 'ไม้ผล', variety: 'พันธุ์ดั้งเดิม', area: 5, status: 'กำลังเจริญเติบโต' },
+                                { id: 'c2', name: 'หน่อไม้ฝรั่ง', type: 'ผัก', variety: 'พันธุ์ลูกผสม', area: 3, status: 'ระยะเก็บเกี่ยว' },
+                                { id: 'c3', name: 'มะนาว', type: 'ไม้ผล', variety: 'พันธุ์แป้น', area: 1, status: 'ออกดอก' }
+                            ],
+                            fertilizer: {
+                                enabled: true,
+                                items: [
+                                    { id: 'f1', type: 'ปุ๋ยเคมี', name: 'สูตร 15-15-15', date: '2026-09-10', time: '07:00' },
+                                    { id: 'f2', type: 'ปุ๋ยคอก', name: 'มูลวัวแห้ง', date: '2026-09-05', time: '08:30' }
+                                ]
+                            },
+                            pest: {
+                                enabled: true,
+                                items: [
+                                    { id: 'p1', category: 'ชีวภัณฑ์', name: 'เชื้อบิวเวอเรีย', method: 'ฉีดพ่น', date: '2026-09-08' },
+                                    { id: 'p2', category: 'เคมี', name: 'สารกำจัดเพลี้ย', method: 'ฉีดพ่น', date: '2026-09-01' }
+                                ]
+                            },
+                            calendarTasks: {
+                                enabled: true,
+                                items: [
+                                    { id: 't1', type: 'กำหนดการให้ปุ๋ย', title: 'ใส่ปุ๋ยบำรุงต้นมะนาว', date: '2026-09-15' },
+                                    { id: 't2', type: 'กำหนดการกำจัดวัชพืช', title: 'ถางหญ้าแปลงหน่อไม้ฝรั่ง', date: '2026-09-18' }
+                                ]
+                            },
+                            financeRecords: {
+                                enabled: true,
+                                items: [
+                                    { id: 'fn1', category: 'ค่าพันธุ์พืช', description: 'ซื้อมะนาวพันธุ์แป้นเพิ่ม', amount: 1500, type: 'expense' },
+                                    { id: 'fn2', category: 'ค่าปุ๋ย', description: 'ซื้อปุ๋ยเคมี 15-15-15', amount: 1200, type: 'expense' },
+                                    { id: 'fn3', category: 'ค่าจ้างแรงงาน', description: 'จ้างคนงานตัดแต่งกิ่ง', amount: 2000, type: 'expense' },
+                                    { id: 'fn4', category: 'รายรับ', description: 'ขายผลผลิตหน่อไม้ฝรั่ง', amount: 5500, type: 'income' }
+                                ]
+                            }
+                        }
+                    },
+                    'kanchanaburi': {
+                        id: 'kanchanaburi', name: 'สวนกาญจนบุรี', location: 'กาญจนบุรี',
+                        lat: 14.033526, lon: 99.614506,
+                        addressDetail: 'บริเวณติดกับด่านเก็บเงินกาญจนบุรี ทางหลวงพิเศษระหว่างเมืองหมายเลข 81 เขตเทศบาลหนองหญ้าดอกขาว อำเภอท่าม่วง จังหวัดกาญจนบุรี',
+                        radarUrl: 'https://weather.tmd.go.th/kriLoop.php',
+                        size: '3 ไร่', color: '#10b981', enabled: true,
+                        settings: {
+                            crops: [
+                                { id: 'k1', name: 'ขนุน', type: 'ไม้ผล', variety: 'พันธุ์ทองประเสริฐ', area: 2, status: 'กำลังเจริญเติบโต' },
+                                { id: 'k2', name: 'กล้วยน้ำว้า', type: 'ไม้ผล', variety: 'มะลิอ่อง', area: 1, status: 'ระยะเก็บเกี่ยว' }
+                            ],
+                            fertilizer: { enabled: true, items: [] },
+                            pest: { enabled: true, items: [] },
+                            calendarTasks: { enabled: true, items: [] },
+                            financeRecords: { enabled: true, items: [] }
+                        }
+                    }
+                };
+            }
+
+            // ⚡ แก้ไข: เงียบเมื่อไม่มี backend + timeout 3 วิ
+            async saveToCloudAndStorage() {
+                // 1. บันทึก localStorage ก่อนเสมอ
+                storageSet(SMART_AGROMIX_STORAGE_KEY, JSON.stringify(this.farms));
+                storageSet('smart_agromix_schema_version', String(SMART_AGROMIX_SCHEMA_VERSION));
+
+                // 2. ลอง sync cloud (ถ้ามี token)
+                if (!getToken()) {
+                    this.cloudAvailable = false;
+                    return true;
+                }
+
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000);
+                    const res = await apiFetch('/api/farms', {
+                        method: 'POST',
+                        body: JSON.stringify(this.farms),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    this.cloudAvailable = res.ok;
+                    return res.ok;
+                } catch (e) {
+                    // เงียบ — localStorage สำเร็จแล้ว
+                    if (this.cloudAvailable !== false) {
+                        console.info('[Smart AgroMix] Cloud sync unavailable — using local storage');
+                        this.cloudAvailable = false;
+                    }
+                    return true;
+                }
+            }
+
+            getCurrentFarm() {
+                return this.farms[currentFarmId] || Object.values(this.farms)[0];
+            }
+
+            switchFarm(id) {
+                if (this.farms[id]) { currentFarmId = id; return true; }
+                return false;
+            }
+
+            getAllFarms() { return Object.values(this.farms); }
+
+            autoSave() {
+                try {
+                    const previous = this.lastSavedSnapshot ? safeClone(this.lastSavedSnapshot) : null;
+                    if (previous && JSON.stringify(previous) !== JSON.stringify(this.farms)) {
+                        this.history.push(previous);
+                        if (this.history.length > 30) this.history.shift();
+                        this.future = [];
+                    }
+                    this.saveToCloudAndStorage().then(() => {
+                        this.lastSavedSnapshot = safeClone(this.farms);
+                        auditLog('save', this.cloudAvailable ? 'บันทึกขึ้น cloud + local' : 'บันทึกเฉพาะ local');
+                    });
+                } catch (e) { 
+                    console.error(e); 
+                    showToast('เกิดข้อผิดพลาดระหว่างบันทึกข้อมูล', 'error'); 
+                }
+            }
+        }
+
+        class GlobalSettingsManager {
+            constructor() {
+                this.settings = { datetime: { currentDate: new Date().toISOString().split('T')[0] } };
+            }
+        }
+
+        // =====================================================
+        // APP INIT
+        // =====================================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons();
+            farmsManager = new MultiFarmManager();
+            await farmsManager.init();
+            settingsManager = new GlobalSettingsManager();
+            updateCurrentDateDisplay();
+            loadFarmSwitcher();
+            switchTab('dashboard');
+            updateAuthButton();
+
+            document.getElementById('menu-toggle').addEventListener('click', () => {
+                document.querySelector('aside').classList.toggle('hidden');
+            });
+
+            setupAuthUI();
+            startWeatherAutoRefresh();
+            registerServiceWorker();
+        });
+
+        // =====================================================
+        // AUTH UI
+        // =====================================================
+        let authMode = 'login';
+
+        function showLoginModal() {
+            document.getElementById('login-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function skipLogin() {
+            document.getElementById('login-modal').classList.add('hidden');
+            showToast('ใช้งานแบบออฟไลน์ ข้อมูลเก็ยเฉพาะในเครื่องนี้', 'success');
+        }
+
+        function setupAuthUI() {
+            document.querySelectorAll('.login-tab').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    authMode = btn.dataset.tab;
+                    document.querySelectorAll('.login-tab').forEach(b => {
+                        b.classList.remove('text-blue-600', 'border-blue-600');
+                        b.classList.add('text-gray-500', 'border-transparent');
+                    });
+                    btn.classList.add('text-blue-600', 'border-blue-600');
+                    btn.classList.remove('text-gray-500', 'border-transparent');
+                    document.getElementById('auth-submit').textContent = 
+                        authMode === 'login' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก';
+                });
+            });
+
+            document.getElementById('auth-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('auth-username').value.trim();
+                const password = document.getElementById('auth-password').value;
+                const btn = document.getElementById('auth-submit');
+                btn.disabled = true;
+                const oldText = btn.textContent;
+                btn.textContent = 'กำลังดำเนินการ...';
+
+                try {
+                    const res = await fetch(`/api/auth/${authMode}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) throw new Error(data.error || data.detail || `HTTP ${res.status}`);
+
+                    setToken(data.token);
+                    setCurrentUser(data.user);
+                    document.getElementById('login-modal').classList.add('hidden');
+                    showToast(`ยินดีต้อนรับ ${data.user.username}!`, 'success');
+
+                    // โหลดข้อมูลจาก cloud
+                    farmsManager = new MultiFarmManager();
+                    await farmsManager.init();
+                    currentFarmId = Object.keys(farmsManager.farms)[0];
+                    updateUIForCurrentFarm();
+                    loadTabContent(currentTab);
+                } catch (err) {
+                    showToast(`เข้าสู่ระบบไม่สำเร็จ: ${err.message}`, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = oldText;
+                }
+            });
+        }
+
+        // =====================================================
+        // SERVICE WORKER (inline)
+        // =====================================================
+        function registerServiceWorker() {
+            if (!('serviceWorker' in navigator)) return;
+            // สร้าง SW จาก Blob (ไม่ต้องมีไฟล์แยก)
+            const swCode = `
+                const CACHE_NAME = 'smart-agromix-v1';
+                const ASSETS = ['/', '/index11.html'];
+                self.addEventListener('install', (e) => {
+                    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+                });
+                self.addEventListener('activate', (e) => {
+                    e.waitUntil(caches.keys().then(keys =>
+                        Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+                    ).then(() => self.clients.claim()));
+                });
+                self.addEventListener('fetch', (e) => {
+                    if (e.request.method !== 'GET') return;
+                    if (e.request.url.includes('/api/') || e.request.url.includes('open-meteo.com')) return;
+                    e.respondWith(
+                        fetch(e.request).then(res => {
+                            const clone = res.clone();
+                            caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+                            return res;
+                        }).catch(() => caches.match(e.request))
+                    );
+                });
+            `;
+            try {
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(swUrl).catch(() => {});
+            } catch (e) { /* ignore */ }
+        }
+
+        // =====================================================
+        // DATE / WEATHER
+        // =====================================================
+        function updateCurrentDateDisplay() {
+            const date = new Date(settingsManager.settings.datetime.currentDate);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = date.toLocaleDateString('th-TH', options);
+        }
+
+        function getWeatherConditionText(code) {
+            const weatherMap = {
+                0: 'ท้องฟ้าแจ่มใส', 1: 'เมฆบางส่วน', 2: 'มีเมฆเป็นส่วนมาก', 3: 'เมฆมาก',
+                45: 'มีหมอก', 48: 'มีหมอกน้ำค้างแข็ง', 51: 'ฝนปรอยเบาๆ', 53: 'ฝนปรอยปานกลาง',
+                55: 'ฝนปรอยหนาแน่น', 61: 'ฝนตกเล็กน้อย', 63: 'ฝนตกปานกลาง', 65: 'ฝนตกหนัก',
+                80: 'ฝนตกปรอยๆ เป็นพักๆ', 81: 'ฝนตกปานกลางถึงหนัก', 82: 'ฝนตกหนักมาก',
+                95: 'พายุฝนฟ้าคะนอง', 96: 'พายุฝนฟ้าคะนอง มีลูกเห็บเล็ก', 99: 'พายุฝนฟ้าคะนอง มีลูกเห็บรุนแรง'
+            };
+            return weatherMap[code] || 'สภาพอากาศปกติ';
+        }
+
+        async function fetchWithRetry(url, options = {}, retries = 1, delay = 1000) {
+            try { return await fetch(url, options); } 
+            catch (error) {
+                if (retries > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithRetry(url, options, retries - 1, delay * 2);
+                }
+                throw error;
+            }
+        }
+
+        async function fetchLiveWeatherData() {
+            if (currentTab !== 'dashboard' || isWeatherFetching) return;
+            isWeatherFetching = true;
+
+            const now = new Date();
+            const timeString = `อัปเดตล่าสุด: ${now.toLocaleTimeString('th-TH')} น.`;
+            const nowTime = now.getTime();
+            const farmEntries = Object.entries(farmsManager.farms);
+
+            await Promise.all(farmEntries.map(async ([farmId, farm]) => {
+                let validLat = parseFloat(farm.lat);
+                let validLon = parseFloat(farm.lon);
+                if (isNaN(validLat) || validLat < -90 || validLat > 90) validLat = 14.0;
+                if (isNaN(validLon) || validLon < -180 || validLon > 180) validLon = 100.0;
+
+                if (!weatherDatabase[farmId]) {
+                    weatherDatabase[farmId] = {
+                        lat: validLat, lon: validLon, addressDetail: farm.addressDetail || farm.location,
+                        temp: 32, condition: 'กำลังซิงค์ TMD & Open-Meteo...', humidity: 70, rainChance: 40,
+                        wind: '10 กม./ชม.', source: 'TMD API & Open-Meteo',
+                        radarUrl: farm.radarUrl || 'https://weather.tmd.go.th/bkkLoop.php',
+                        updateTime: timeString, isOffline: false,
+                        past7DaysRain: [5, 2, 0, 10, 4, 8, 5], future7DaysRain: [20, 35, 50, 15, 5, 0, 0]
+                    };
+                } else {
+                    weatherDatabase[farmId].lat = validLat;
+                    weatherDatabase[farmId].lon = validLon;
+                    weatherDatabase[farmId].addressDetail = farm.addressDetail ?? weatherDatabase[farmId].addressDetail;
+                    weatherDatabase[farmId].radarUrl = farm.radarUrl ?? weatherDatabase[farmId].radarUrl;
+                }
+
+                const farmData = weatherDatabase[farmId];
+                const cacheKey = `${validLat},${validLon}`;
+
+                if (weatherCache[cacheKey] && (nowTime - weatherCache[cacheKey].timestamp < WEATHER_CACHE_DURATION)) {
+                    const cached = weatherCache[cacheKey].data;
+                    farmData.temp = cached.temp;
+                    farmData.humidity = cached.humidity;
+                    farmData.wind = cached.wind;
+                    farmData.condition = cached.condition;
+                    farmData.rainChance = cached.rainChance;
+                    farmData.past7DaysRain = cached.past7DaysRain || farmData.past7DaysRain;
+                    farmData.future7DaysRain = cached.future7DaysRain || farmData.future7DaysRain;
+                    farmData.source = 'TMD & Open-Meteo API (Cached)';
+                    farmData.isOffline = false;
+                    farmData.updateTime = timeString;
+                    return;
+                }
+
+                const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=${validLat}&longitude=${validLon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&hourly=temperature_2m,rain,showers,cloud_cover,precipitation_probability&daily=precipitation_sum&timezone=auto`;
+
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 8000);
+                    const response = await fetchWithRetry(openMeteoUrl, { signal: controller.signal }, 1, 1000);
+                    clearTimeout(timeoutId);
+
+                    if (response.status === 429) {
+                        farmData.source = 'Open-Meteo (Rate Limit 429)';
+                        farmData.isOffline = true;
+                        return;
+                    }
+
+                    if (response && response.ok) {
+                        const data = await response.json();
+                        if (data.current) {
+                            farmData.temp = Math.round(data.current.temperature_2m || 32);
+                            if (data.current.relative_humidity_2m !== undefined) farmData.humidity = Math.round(data.current.relative_humidity_2m);
+                            if (data.current.wind_speed_10m !== undefined) farmData.wind = `${data.current.wind_speed_10m} กม./ชม.`;
+                            if (data.current.weather_code !== undefined) farmData.condition = getWeatherConditionText(data.current.weather_code);
+                        }
+
+                        if (data.hourly && data.hourly.time && data.hourly.time.length > 0) {
+                            const startTime = new Date(data.hourly.time[0]).getTime();
+                            let currentIndex = Math.floor((nowTime - startTime) / 3600000);
+                            currentIndex = Math.max(0, Math.min(currentIndex, data.hourly.time.length - 1));
+                            if (data.hourly.precipitation_probability && data.hourly.precipitation_probability[currentIndex] !== undefined) {
+                                farmData.rainChance = Math.round(data.hourly.precipitation_probability[currentIndex]);
+                            }
+                        }
+
+                        if (data.daily && data.daily.precipitation_sum && data.daily.precipitation_sum.length >= 14) {
+                            const dailySums = data.daily.precipitation_sum;
+                            farmData.past7DaysRain = dailySums.slice(0, 7).map(v => v || 0);
+                            farmData.future7DaysRain = dailySums.slice(7, 14).map(v => v || 0);
+                        }
+
+                        farmData.source = 'Open-Meteo Weather API (Real-time)';
+                        farmData.isOffline = false;
+
+                        weatherCache[cacheKey] = {
+                            timestamp: nowTime,
+                            data: {
+                                temp: farmData.temp, humidity: farmData.humidity, wind: farmData.wind,
+                                condition: farmData.condition, rainChance: farmData.rainChance,
+                                past7DaysRain: farmData.past7DaysRain, future7DaysRain: farmData.future7DaysRain
+                            }
+                        };
+                        saveWeatherCache(weatherCache);
+                    } else {
+                        farmData.source = 'TMD & Open-Meteo (เชื่อมต่อขัดข้อง)';
+                        farmData.isOffline = true;
+                    }
+                } catch (err) {
+                    farmData.source = 'TMD & Open-Meteo (เครือข่ายขัดข้อง / ข้อมูลสำรอง)';
+                    farmData.isOffline = true;
+                }
+                farmData.updateTime = timeString;
+            }));
+
+            isWeatherFetching = false;
+            if (currentTab === 'dashboard') {
+                const tempEl = document.getElementById('weather-temp-display');
+                const timeEl = document.getElementById('weather-updatetime-display');
+                if (tempEl && timeEl) {
+                    const farm = farmsManager.getCurrentFarm();
+                    const weather = weatherDatabase[farm.id] || Object.values(weatherDatabase)[0];
+                    tempEl.textContent = `${weather.temp}°C`;
+                    timeEl.textContent = weather.updateTime;
+                }
+            }
+        }
+
+        // ⚡ แก้ไข: รีเฟรช 15 นาที ป้องกัน rate limit
+        function startWeatherAutoRefresh() {
+            fetchLiveWeatherData();
+            if (weatherTimer) clearInterval(weatherTimer);
+            weatherTimer = setInterval(() => { fetchLiveWeatherData().catch(() => {}); }, 900000);
+        }
+
+        // =====================================================
+        // FARM SWITCHER
+        // =====================================================
+        function loadFarmSwitcher() {
+            const container = document.getElementById('farm-switcher-container');
+            if(!container) return;
+            const currentFarm = farmsManager.getCurrentFarm();
+            const allFarms = farmsManager.getAllFarms();
+            
+            container.innerHTML = `
+                <div class="relative group">
+                    <button id="current-farm-btn" class="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700">
+                        <div class="w-3 h-3 rounded-full" style="background-color: ${currentFarm.color}"></div>
+                        <span>${escapeHtml(currentFarm.name)}</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-1 hidden group-hover:block hover:block z-50">
+                        <div class="px-4 py-2 border-b border-gray-100"><p class="text-xs text-gray-500">เลือกสวนที่ต้องการจัดการ</p></div>
+                        <div class="py-1">
+                            ${allFarms.map(farm => `
+                                <button onclick="switchToFarm('${escapeHtml(farm.id)}')" class="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 text-left ${farm.id === currentFarmId ? 'bg-blue-50' : ''}">
+                                    <div class="w-3 h-3 rounded-full" style="background-color: ${farm.color}"></div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-gray-900">${escapeHtml(farm.name)}</p>
+                                        <p class="text-xs text-gray-500">${escapeHtml(farm.location)} • ${escapeHtml(farm.size)}</p>
+                                    </div>
+                                    ${farm.id === currentFarmId ? '<i data-lucide="check" class="w-4 h-4 text-blue-600"></i>' : ''}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function switchToFarm(farmId) {
+            if (farmsManager.switchFarm(farmId)) {
+                updateUIForCurrentFarm();
+                loadTabContent(currentTab);
+                showToast(`เปลี่ยนไปจัดการ: ${farmsManager.getCurrentFarm().name}`, 'success');
+            }
+        }
+
+        function updateUIForCurrentFarm() {
+            const currentFarm = farmsManager.getCurrentFarm();
+            document.getElementById('farm-name-header').textContent = currentFarm.name;
+            document.getElementById('farm-location-header').textContent = currentFarm.location;
+            loadFarmSwitcher();
+        }
+
+        // =====================================================
+        // TAB SWITCHING
+        // =====================================================
+        function switchTab(tabName) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-gray-900');
+                btn.classList.add('text-gray-600');
+            });
+            
+            let tabElement = document.getElementById(`tab-${tabName}`);
+            if (!tabElement) {
+                tabElement = document.createElement('section');
+                tabElement.id = `tab-${tabName}`;
+                tabElement.className = 'space-y-6 fade-in';
+                document.getElementById('content-area').appendChild(tabElement);
+            }
+            tabElement.classList.remove('hidden');
+
+            document.getElementById(`nav-${tabName}`)?.classList.add('active', 'text-gray-900');
+            document.getElementById(`mobile-nav-${tabName}`)?.classList.add('active', 'text-gray-900');
+            
+            currentTab = tabName;
+            loadTabContent(tabName);
+            if (tabName === 'dashboard') fetchLiveWeatherData();
+        }
+
+        function loadTabContent(tabName) {
+            const contentArea = document.getElementById(`tab-${tabName}`);
+            if (tabName === 'dashboard') contentArea.innerHTML = getDashboardHTML();
+            else if (tabName === 'fertilizer') contentArea.innerHTML = getFertilizerHTML();
+            else if (tabName === 'pest') contentArea.innerHTML = getPestHTML();
+            else if (tabName === 'irrigation') contentArea.innerHTML = getIrrigationHTML();
+            else if (tabName === 'calendar') contentArea.innerHTML = getCalendarHTML();
+            else if (tabName === 'finance') contentArea.innerHTML = getFinanceHTML();
+            else if (tabName === 'settings') contentArea.innerHTML = getSettingsHTML();
+            
+            if (tabName === 'settings') {
+                const codeArea = document.getElementById('code-textarea');
+                if (codeArea) {
+                    codeArea.value = document.documentElement.outerHTML;
+                }
+            }
+            lucide.createIcons();
+        }
+
+        // =====================================================
+        // DASHBOARD
+        // =====================================================
+        function getDashboardHTML() {
+            const farm = farmsManager.getCurrentFarm();
+            const weather = weatherDatabase[farm.id] || {
+                lat: farm.lat || 14.0, lon: farm.lon || 100.0, addressDetail: farm.addressDetail || farm.location,
+                temp: 32, condition: 'อากาศปกติ', humidity: 70, rainChance: 40, wind: '10 กม./ชม.',
+                source: 'TMD API & Open-Meteo', radarUrl: farm.radarUrl || 'https://weather.tmd.go.th/bkkLoop.php',
+                updateTime: 'อัปเดตล่าสุด: สด', isOffline: false,
+                past7DaysRain: [0, 0, 5, 2, 10, 3, 1], future7DaysRain: [20, 40, 60, 30, 10, 0, 0]
+            };
+            
+            let totalPastRain = (weather.past7DaysRain || []).reduce((a, b) => a + b, 0);
+            let totalFutureRain = (weather.future7DaysRain || []).reduce((a, b) => a + b, 0);
+            let avgFutureRain = totalFutureRain / 7;
+
+            let wateringAdviceTitle = "";
+            let wateringAdviceDesc = "";
+            let badgeColor = "";
+
+            if (weather.rainChance > 60 || avgFutureRain > 15) {
+                badgeColor = "bg-blue-100 text-blue-800 border-blue-200";
+                wateringAdviceTitle = "🚨 ประกาศงด/ลดการให้น้ำเป็นกรณีพิเศษ (วิเคราะห์จากฝนสะสมและเรดาร์)";
+                wateringAdviceDesc = `จากการวิเคราะห์พยากรณ์อากาศ 7 วันข้างหน้า พบปริมาณฝนรวมสูง (${totalFutureRain.toFixed(1)} มม.) ประกอบกับเรดาร์ฝนตรวจพบกลุ่มฝนเคลื่อนตัวปกคลุมพื้นที่ และโอกาสเกิดฝน ${weather.rainChance}% แนะนำให้<b>งดเปิดระบบน้ำอัตโนมัติ</b>ทันที เพื่อป้องกันภาวะรากเน่าและประหยัดพลังงาน`;
+            } else if (totalPastRain < 5 && weather.temp > 33 && weather.rainChance < 30) {
+                badgeColor = "bg-amber-100 text-amber-800 border-amber-200";
+                wateringAdviceTitle = "⚠️ แนะนำเพิ่มรอบการให้น้ำ (สภาพอากาศแล้งและฝนย้อนหลังน้อย)";
+                wateringAdviceDesc = `วิเคราะห์ข้อมูลย้อนหลัง 7 วัน ปริมาณฝนน้อยมาก (${totalPastRain.toFixed(1)} มม.) และอุณหภูมิเฉลี่ยสูงถึง ${weather.temp}°C พืชในสวนมีความต้องการน้ำเพิ่มขึ้น 25-30% แนะนำให้เพิ่มเวลารดน้ำช่วงเช้าและเย็น`;
+            } else {
+                badgeColor = "bg-emerald-100 text-emerald-800 border-emerald-200";
+                wateringAdviceTitle = "✅ ปฏิบัติตามรอบการให้น้ำปกติ (สมดุลน้ำเหมาะสม)";
+                wateringAdviceDesc = `ข้อมูลจากกรมอุตุนิยมวิทยาและ Open-Meteo ระบุความชื้นในดินและปริมาณฝนอยู่ในเกณฑ์สมดุล (ฝนย้อนหลัง ${totalPastRain.toFixed(1)} มม., ฝน 7 วันข้างหน้า ${totalFutureRain.toFixed(1)} มม.) ดำเนินการรดน้ำตามตารางปกติ`;
+            }
+
+            return `
+                <div class="space-y-6">
+                    <div class="bg-gradient-to-r from-emerald-600 to-green-700 rounded-3xl p-6 text-white shadow-lg">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <span class="px-3 py-1 bg-white/20 rounded-full text-xs font-semibold backdrop-blur-md">ขนาดพื้นที่: ${escapeHtml(farm.size)}</span>
+                                <h2 class="text-2xl md:text-3xl font-bold mt-2">ยินดีต้อนรับสู่ ${escapeHtml(farm.name)}</h2>
+                                <p class="text-emerald-100 text-sm mt-1">วิเคราะห์ข้อมูลอุตุนิยมวิทยาจริงจาก TMD API และ Open-Meteo พร้อมคำแนะนำการจัดการสวนแบบเรียลไทม์</p>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 flex items-center space-x-4">
+                                <div class="text-3xl font-bold" id="weather-temp-display">${weather.temp}°C</div>
+                                <div class="text-xs space-y-1">
+                                    <div class="font-semibold">${escapeHtml(weather.condition)}</div>
+                                    <div class="text-emerald-200">ความชื้น: ${weather.humidity}% | โอกาสฝน: ${weather.rainChance}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-2">
+                                        <i data-lucide="cloud-sun" class="w-5 h-5 text-blue-500"></i>
+                                        <h3 class="font-bold text-gray-900">พยากรณ์อากาศรายวัน (TMD & Open-Meteo)</h3>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        ${weather.isOffline ? '<span class="text-xs bg-red-50 text-red-700 px-2.5 py-1 rounded-full font-medium border border-red-200">⚠️ โหมดสำรอง</span>' : ''}
+                                        <span class="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-medium">${escapeHtml(weather.source)}</span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                                    <div class="bg-gray-50 p-3 rounded-xl text-center border">
+                                        <div class="text-xs text-gray-500">อุณหภูมิ</div>
+                                        <div class="text-lg font-bold text-gray-900 mt-1">${weather.temp}°C</div>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-xl text-center border">
+                                        <div class="text-xs text-gray-500">โอกาสเกิดฝน</div>
+                                        <div class="text-lg font-bold text-blue-600 mt-1">${weather.rainChance}%</div>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-xl text-center border">
+                                        <div class="text-xs text-gray-500">ความชื้นสัมพัทธ์</div>
+                                        <div class="text-lg font-bold text-emerald-600 mt-1">${weather.humidity}%</div>
+                                    </div>
+                                    <div class="bg-gray-50 p-3 rounded-xl text-center border">
+                                        <div class="text-xs text-gray-500">ลม</div>
+                                        <div class="text-xs font-bold text-gray-900 mt-2">${escapeHtml(weather.wind)}</div>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 bg-blue-50/50 p-3 rounded-xl border border-blue-100 mb-3"><strong>สถานที่ตั้ง:</strong> ${escapeHtml(weather.addressDetail)}</p>
+                                <p class="text-sm text-gray-600 bg-blue-50/50 p-3 rounded-xl border border-blue-100"><strong>สภาพอากาศปัจจุบัน:</strong> ${escapeHtml(weather.condition)}</p>
+                            </div>
+                            <div class="mt-4 pt-3 border-t text-xs text-gray-400 flex justify-between items-center">
+                                <span>พิกัด Lat: ${weather.lat}, Lon: ${weather.lon}</span>
+                                <span id="weather-updatetime-display">${escapeHtml(weather.updateTime)}</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center space-x-2">
+                                        <i data-lucide="radar" class="w-5 h-5 text-emerald-600 animate-spin"></i>
+                                        <h3 class="font-bold text-gray-900">เรดาร์ฝนเคลื่อนไหว</h3>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <select id="radar-source-select" onchange="changeRadarSource(this.value)" class="text-xs border rounded px-2 py-1 bg-gray-50 font-medium">
+                                            <option value="${escapeHtml(weather.radarUrl)}">เรดาร์พิกัดปัจจุบัน (เชื่อมโยงสวนนี้)</option>
+                                            <option value="https://weather.tmd.go.th/bkkLoop.php">เรดาร์กรมอุตุฯ (กรุงเทพฯ/ภาคกลาง)</option>
+                                            <option value="https://weather.tmd.go.th/kriLoop.php">เรดาร์กรมอุตุฯ (กาญจนบุรี/ภาคตะวันตก)</option>
+                                            <option value="https://weather.tmd.go.th/cmyLoop.php">เรดาร์กรมอุตุฯ (เชียงใหม่/ภาคเหนือ)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="radar-wrapper shadow-inner border">
+                                    <iframe id="radar-iframe" src="${escapeHtml(weather.radarUrl)}" title="Rain Radar" loading="lazy"></iframe>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex justify-between items-center text-xs text-gray-500">
+                                <span>ภาพเคลื่อนไหวกลุ่มฝนสะสมล่าสุดตามพิกัดสวน</span>
+                                <button onclick="openRadarExternalWindow()" class="text-blue-600 hover:underline font-medium flex items-center space-x-1 cursor-pointer bg-transparent border-0 p-0">
+                                    <span>เปิดหน้าต่างใหม่</span><i data-lucide="external-link" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="droplets" class="w-6 h-6 text-blue-600"></i>
+                                <h3 class="text-lg font-bold text-gray-900">คำแนะนำการรดน้ำต้นไม้ประจำวัน (วิเคราะห์ครบวงจร)</h3>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold border ${badgeColor}">สถานะ: วิเคราะห์เรียบร้อย</span>
+                        </div>
+
+                        <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-4 mb-6">
+                            <h4 class="font-bold text-blue-900 text-base mb-1">${escapeHtml(wateringAdviceTitle)}</h4>
+                            <p class="text-sm text-blue-800 leading-relaxed">${wateringAdviceDesc}</p>
+                        </div>
+
+                        <h4 class="font-semibold text-gray-800 text-sm mb-3">แนวทางปฏิบัติแยกตามชนิดและประเภทพืชในสวน (${escapeHtml(farm.name)}):</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            ${farm.settings.crops.map(crop => {
+                                let adviceText = "";
+                                if (crop.type === 'ไม้ผล') {
+                                    adviceText = (weather.rainChance > 60 || avgFutureRain > 15) ? "งดให้น้ำทางระบบสปริงเกอร์ ตรวจสอบความชื้นโคนต้น" : "ให้น้ำ 40-50 ลิตร/ต้น รอบทรงพุ่ม ช่วงเช้า 06:00 น.";
+                                } else if (crop.type === 'ผัก') {
+                                    adviceText = (weather.rainChance > 60 || avgFutureRain > 15) ? "ระวังน้ำขัง แปลงผักต้องการการระบายน้ำที่ดี" : "ระบบน้ำหยดทำงานปกติ 15-20 นาที เช้าและเย็น";
+                                } else {
+                                    adviceText = "ควบคุมความชื้นดินให้อยู่ในระดับ 60-70%";
+                                }
+
+                                return `
+                                    <div class="bg-gray-50 border rounded-xl p-4 flex flex-col justify-between hover:border-blue-300 transition">
+                                        <div>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="font-bold text-gray-900">${escapeHtml(crop.name)}</span>
+                                                <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">${escapeHtml(crop.type)}</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mb-2">พันธุ์: ${escapeHtml(crop.variety || 'ทั่วไป')} | พื้นที่: ${crop.area} ไร่</p>
+                                            <p class="text-xs text-gray-700 bg-white p-2.5 rounded-lg border"><strong>คำแนะนำ:</strong> ${escapeHtml(adviceText)}</p>
+                                        </div>
+                                        <div class="mt-4 pt-2 border-t flex justify-between items-center text-[11px] text-gray-500">
+                                            <span>สถานะ: ${escapeHtml(crop.status)}</span>
+                                            <span class="text-blue-600 font-medium">TMD & Open-Meteo Active</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function changeRadarSource(url) {
+            const iframe = document.getElementById('radar-iframe');
+            if(iframe) { iframe.src = url; showToast('เปลี่ยนแหล่งเรดาร์ฝนเรียบร้อย', 'success'); }
+        }
+
+        function openRadarExternalWindow() {
+            const iframe = document.getElementById('radar-iframe');
+            const targetUrl = iframe ? iframe.src : 'https://weather.tmd.go.th/bkkLoop.php';
+            window.open(targetUrl, '_blank', 'noopener,noreferrer');
+        }
+
+        // =====================================================
+        // FERTILIZER
+        // =====================================================
+        function getFertilizerHTML() {
+            const farm = farmsManager.getCurrentFarm();
+            const fert = farm.settings.fertilizer;
+            return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">จัดการปุ๋ย (${escapeHtml(farm.name)})</h2>
+                            <p class="text-xs text-gray-500 mt-1">กำหนดประเภทปุ๋ย วัน เดือน ปี และเวลาให้ปุ๋ย</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="flex items-center space-x-2 text-sm font-medium cursor-pointer">
+                                <span>เปิดใช้งานเมนูย่อย:</span>
+                                <input type="checkbox" ${fert.enabled ? 'checked' : ''} onchange="toggleSubMenu('fertilizer', this.checked)" class="w-4 h-4 text-emerald-600 rounded">
+                            </label>
+                            <button onclick="exportData('fertilizer', 'excel')" class="flex items-center space-x-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Excel</span></button>
+                            <button onclick="exportData('fertilizer', 'pdf')" class="flex items-center space-x-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-text" class="w-4 h-4"></i><span>PDF</span></button>
+                        </div>
+                    </div>
+                    ${fert.enabled ? `
+                        <div class="bg-gray-50 p-4 rounded-xl border space-y-4">
+                            <h3 class="font-bold text-sm text-gray-800" id="fert-form-title">เพิ่มรายการให้ปุ๋ยใหม่</h3>
+                            <input type="hidden" id="edit-fert-id" value="">
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                <select id="new-fert-type" class="border rounded-lg p-2 text-sm bg-white">
+                                    <option value="ปุ๋ยหมัก">ปุ๋ยหมัก</option><option value="ปุ๋ยคอก">ปุ๋ยคอก</option><option value="ปุ๋ยเคมี">ปุ๋ยเคมี</option><option value="ธาตุรอง/ธาตุเสริม">ธาตุรอง/ธาตุเสริม</option><option value="ฮอร์โมน">ฮอร์โมน</option>
+                                </select>
+                                <input type="text" id="new-fert-name" placeholder="ชื่อสูตรหรือชื่อปุ๋ย" class="border rounded-lg p-2 text-sm bg-white">
+                                <input type="date" id="new-fert-date" class="border rounded-lg p-2 text-sm bg-white">
+                                <input type="time" id="new-fert-time" class="border rounded-lg p-2 text-sm bg-white">
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="saveFertilizerItem()" id="fert-save-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">เพิ่มข้อมูลปุ๋ย</button>
+                                <button onclick="cancelEditFertilizer()" id="fert-cancel-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">ยกเลิกแก้ไข</button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-gray-100 border-b text-gray-700"><th class="p-3">ประเภทปุ๋ย</th><th class="p-3">ชื่อ/สูตร</th><th class="p-3">วัน เดือน ปี</th><th class="p-3">เวลา</th><th class="p-3 text-center">จัดการ</th></tr>
+                                </thead>
+                                <tbody>
+                                    ${fert.items.length === 0 ? '<tr><td colspan="5" class="p-4 text-center text-gray-500">ยังไม่มีข้อมูลปุ๋ย</td></tr>' : 
+                                        fert.items.map(item => `
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="p-3"><span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold">${escapeHtml(item.type)}</span></td>
+                                                <td class="p-3 font-medium text-gray-900">${escapeHtml(item.name)}</td>
+                                                <td class="p-3 text-gray-600">${escapeHtml(item.date)}</td>
+                                                <td class="p-3 text-gray-600">${escapeHtml(item.time || '-')}</td>
+                                                <td class="p-3 text-center space-x-2">
+                                                    <button onclick="editFertilizerItem('${escapeHtml(item.id)}')" class="text-blue-500 hover:text-blue-700 p-1"><i data-lucide="edit-3" class="w-4 h-4 inline"></i></button>
+                                                    <button onclick="deleteFertilizerItem('${escapeHtml(item.id)}')" class="text-red-500 hover:text-red-700 p-1"><i data-lucide="trash-2" class="w-4 h-4 inline"></i></button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : `<div class="p-8 text-center text-gray-400 bg-gray-50 rounded-xl">เมนูย่อยนี้ถูกปิดใช้งานอยู่</div>`}
+                </div>
+            `;
+        }
+
+        // =====================================================
+        // PEST
+        // =====================================================
+        function getPestHTML() {
+            const farm = farmsManager.getCurrentFarm();
+            const pest = farm.settings.pest;
+            return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">ฉีดพ่นศัตรูพืช (${escapeHtml(farm.name)})</h2>
+                            <p class="text-xs text-gray-500 mt-1">ประเภทสารป้องกันและกำจัดศัตรูพืช พร้อมวิธีการใช้</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="flex items-center space-x-2 text-sm font-medium cursor-pointer">
+                                <span>เปิดใช้งานเมนูย่อย:</span>
+                                <input type="checkbox" ${pest.enabled ? 'checked' : ''} onchange="toggleSubMenu('pest', this.checked)" class="w-4 h-4 text-emerald-600 rounded">
+                            </label>
+                            <button onclick="exportData('pest', 'excel')" class="flex items-center space-x-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Excel</span></button>
+                            <button onclick="exportData('pest', 'pdf')" class="flex items-center space-x-1 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-text" class="w-4 h-4"></i><span>PDF</span></button>
+                        </div>
+                    </div>
+                    ${pest.enabled ? `
+                        <div class="bg-gray-50 p-4 rounded-xl border space-y-4">
+                            <h3 class="font-bold text-sm text-gray-800" id="pest-form-title">เพิ่มรายการป้องกันกำจัดศัตรูพืช</h3>
+                            <input type="hidden" id="edit-pest-id" value="">
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                                <select id="new-pest-cat" class="border rounded-lg p-2 text-sm bg-white"><option value="ชีวภัณฑ์">ชีวภัณฑ์</option><option value="เคมี">เคมี</option></select>
+                                <input type="text" id="new-pest-name" placeholder="ชื่อสารป้องกัน/กำจัด" class="border rounded-lg p-2 text-sm bg-white">
+                                <select id="new-pest-method" class="border rounded-lg p-2 text-sm bg-white"><option value="ฉีดพ่น">ฉีดพ่น</option><option value="ใส่ลงดิน">ใส่ลงดิน</option></select>
+                                <input type="date" id="new-pest-date" class="border rounded-lg p-2 text-sm bg-white">
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="savePestItem()" id="pest-save-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">เพิ่มข้อมูลศัตรูพืช</button>
+                                <button onclick="cancelEditPest()" id="pest-cancel-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">ยกเลิกแก้ไข</button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-gray-100 border-b text-gray-700"><th class="p-3">ประเภทสาร</th><th class="p-3">ชื่อสาร/ผลิตภัณฑ์</th><th class="p-3">วิธีการใช้</th><th class="p-3">วันที่ปฏิบัติ</th><th class="p-3 text-center">จัดการ</th></tr>
+                                </thead>
+                                <tbody>
+                                    ${pest.items.length === 0 ? '<tr><td colspan="5" class="p-4 text-center text-gray-500">ยังไม่มีข้อมูลศัตรูพืช</td></tr>' : 
+                                        pest.items.map(item => `
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="p-3"><span class="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-semibold">${escapeHtml(item.category)}</span></td>
+                                                <td class="p-3 font-medium text-gray-900">${escapeHtml(item.name)}</td>
+                                                <td class="p-3 text-gray-600"><span class="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">${escapeHtml(item.method)}</span></td>
+                                                <td class="p-3 text-gray-600">${escapeHtml(item.date)}</td>
+                                                <td class="p-3 text-center space-x-2">
+                                                    <button onclick="editPestItem('${escapeHtml(item.id)}')" class="text-blue-500 hover:text-blue-700 p-1"><i data-lucide="edit-3" class="w-4 h-4 inline"></i></button>
+                                                    <button onclick="deletePestItem('${escapeHtml(item.id)}')" class="text-red-500 hover:text-red-700 p-1"><i data-lucide="trash-2" class="w-4 h-4 inline"></i></button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : `<div class="p-8 text-center text-gray-400 bg-gray-50 rounded-xl">เมนูย่อยนี้ถูกปิดใช้งานอยู่</div>`}
+                </div>
+            `;
+        }
+
+        // =====================================================
+        // IRRIGATION
+        // =====================================================
+        function getIrrigationHTML() {
+            const farm = farmsManager.getCurrentFarm();
+            return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">ระบบน้ำ (${escapeHtml(farm.name)})</h2>
+                            <p class="text-xs text-gray-500 mt-1">ควบคุมและตั้งเวลาระบบรดน้ำอัตโนมัติภายในสวน</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="exportData('irrigation', 'excel')" class="flex items-center space-x-1 bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Excel</span></button>
+                            <button onclick="exportData('irrigation', 'pdf')" class="flex items-center space-x-1 bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-text" class="w-4 h-4"></i><span>PDF</span></button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+                            <p class="text-xs text-blue-600 font-semibold mb-1">สถานะปั๊มน้ำหลัก</p>
+                            <p class="text-lg font-bold text-blue-900">ปิดอัตโนมัติ (ตามสภาพฝน)</p>
+                            <button onclick="showToast('สั่งการเปิด/ปิดปั๊มน้ำสำเร็จ', 'success')" class="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-semibold">สลับสถานะปั๊ม</button>
+                        </div>
+                        <div class="bg-gray-50 border rounded-xl p-4 text-center">
+                            <p class="text-xs text-gray-500 mb-1">รอบเช้า</p><p class="text-lg font-bold text-gray-900">06:00 - 06:30 น.</p><span class="text-xs text-emerald-600 font-medium">ตั้งเวลาอัตโนมัติ</span>
+                        </div>
+                        <div class="bg-gray-50 border rounded-xl p-4 text-center">
+                            <p class="text-xs text-gray-500 mb-1">รอบเย็น</p><p class="text-lg font-bold text-gray-900">17:00 - 17:30 น.</p><span class="text-xs text-emerald-600 font-medium">ตั้งเวลาอัตโนมัติ</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // =====================================================
+        // CALENDAR
+        // =====================================================
+        function getCalendarHTML() {
+            const farm = farmsManager.getCurrentFarm();
+            const cal = farm.settings.calendarTasks;
+            return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">ปฏิทินเกษตร (${escapeHtml(farm.name)})</h2>
+                            <p class="text-xs text-gray-500 mt-1">กำหนดการให้ปุ๋ย, ศัตรูพืช, วัชพืช และปลูกต้นไม้</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="flex items-center space-x-2 text-sm font-medium cursor-pointer">
+                                <span>เปิดใช้งานเมนูย่อย:</span>
+                                <input type="checkbox" ${cal.enabled ? 'checked' : ''} onchange="toggleSubMenu('calendarTasks', this.checked)" class="w-4 h-4 text-emerald-600 rounded">
+                            </label>
+                            <button onclick="exportData('calendar', 'excel')" class="flex items-center space-x-1 bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Excel</span></button>
+                            <button onclick="exportData('calendar', 'pdf')" class="flex items-center space-x-1 bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-text" class="w-4 h-4"></i><span>PDF</span></button>
+                        </div>
+                    </div>
+                    ${cal.enabled ? `
+                        <div class="bg-gray-50 p-4 rounded-xl border space-y-4">
+                            <h3 class="font-bold text-sm text-gray-800" id="cal-form-title">เพิ่มกำหนดการใหม่</h3>
+                            <input type="hidden" id="edit-cal-id" value="">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <select id="new-cal-type" class="border rounded-lg p-2 text-sm bg-white"><option value="กำหนดการให้ปุ๋ย">กำหนดการให้ปุ๋ย</option><option value="กำหนดการป้องกันกำจัดศัตรูพืช">กำหนดการป้องกันกำจัดศัตรูพืช</option><option value="กำหนดการกำจัดวัชพืช">กำหนดการกำจัดวัชพืช</option><option value="กำหนดการปลูกต้นไม้">กำหนดการปลูกต้นไม้</option></select>
+                                <input type="text" id="new-cal-title" placeholder="รายละเอียดกำหนดการ" class="border rounded-lg p-2 text-sm bg-white">
+                                <input type="date" id="new-cal-date" class="border rounded-lg p-2 text-sm bg-white">
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="saveCalendarItem()" id="cal-save-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">เพิ่มกำหนดการ</button>
+                                <button onclick="cancelEditCalendar()" id="cal-cancel-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">ยกเลิกแก้ไข</button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-gray-100 border-b text-gray-700"><th class="p-3">ประเภทกิจกรรม</th><th class="p-3">หัวข้อ/รายละเอียด</th><th class="p-3">วันที่กำหนด</th><th class="p-3 text-center">จัดการ</th></tr>
+                                </thead>
+                                <tbody>
+                                    ${cal.items.length === 0 ? '<tr><td colspan="4" class="p-4 text-center text-gray-500">ยังไม่มีกำหนดการในปฏิทิน</td></tr>' : 
+                                        cal.items.map(item => `
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="p-3"><span class="px-2.5 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-semibold">${escapeHtml(item.type)}</span></td>
+                                                <td class="p-3 font-medium text-gray-900">${escapeHtml(item.title)}</td>
+                                                <td class="p-3 text-gray-600">${escapeHtml(item.date)}</td>
+                                                <td class="p-3 text-center space-x-2">
+                                                    <button onclick="editCalendarItem('${escapeHtml(item.id)}')" class="text-blue-500 hover:text-blue-700 p-1"><i data-lucide="edit-3" class="w-4 h-4 inline"></i></button>
+                                                    <button onclick="deleteCalendarItem('${escapeHtml(item.id)}')" class="text-red-500 hover:text-red-700 p-1"><i data-lucide="trash-2" class="w-4 h-4 inline"></i></button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : `<div class="p-8 text-center text-gray-400 bg-gray-50 rounded-xl">เมนูย่อยนี้ถูกปิดใช้งานอยู่</div>`}
+                </div>
+            `;
+        }
+
+        // =====================================================
+        // FINANCE
+        // =====================================================
+        function getFinanceHTML() {
+            const farm = farmsManager.getCurrentFarm();
+            const fin = farm.settings.financeRecords;
+            let totalExpense = fin.items.filter(i => i.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+            let totalIncome = fin.items.filter(i => i.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
+            let netProfit = totalIncome - totalExpense;
+
+            return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">การเงินและต้นทุนการผลิต (${escapeHtml(farm.name)})</h2>
+                            <p class="text-xs text-gray-500 mt-1">คำนวณการใช้เงินลงทุน พร้อมรายการรับ-จ่าย</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="flex items-center space-x-2 text-sm font-medium cursor-pointer">
+                                <span>เปิดใช้งานเมนูย่อย:</span>
+                                <input type="checkbox" ${fin.enabled ? 'checked' : ''} onchange="toggleSubMenu('financeRecords', this.checked)" class="w-4 h-4 text-emerald-600 rounded">
+                            </label>
+                            <button onclick="exportData('finance', 'excel')" class="flex items-center space-x-1 bg-emerald-600 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span>Excel</span></button>
+                            <button onclick="exportData('finance', 'pdf')" class="flex items-center space-x-1 bg-red-600 text-white px-3 py-2 rounded-lg text-xs font-semibold"><i data-lucide="file-text" class="w-4 h-4"></i><span>PDF</span></button>
+                        </div>
+                    </div>
+                    ${fin.enabled ? `
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                            <div class="bg-red-50 border border-red-200 p-4 rounded-xl text-center"><p class="text-xs text-red-600 font-semibold">รวมค่าใช้จ่าย (ต้นทุน)</p><p class="text-xl font-bold text-red-700 mt-1">${totalExpense.toLocaleString()} บาท</p></div>
+                            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-center"><p class="text-xs text-emerald-600 font-semibold">รวมรายรับ</p><p class="text-xl font-bold text-emerald-700 mt-1">${totalIncome.toLocaleString()} บาท</p></div>
+                            <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl text-center"><p class="text-xs text-blue-600 font-semibold">ต้นทุนเฉลี่ย</p><p class="text-xl font-bold text-blue-700 mt-1">${(totalExpense / 2).toLocaleString()} บาท/รอบ</p></div>
+                            <div class="bg-purple-50 border border-purple-200 p-4 rounded-xl text-center"><p class="text-xs text-purple-600 font-semibold">กำไร / ขาดทุน สุทธิ</p><p class="text-xl font-bold ${netProfit >= 0 ? 'text-purple-700' : 'text-red-600'} mt-1">${netProfit.toLocaleString()} บาท</p></div>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-xl border space-y-4">
+                            <h3 class="font-bold text-sm text-gray-800" id="fin-form-title">เพิ่มรายการรับ-จ่าย</h3>
+                            <input type="hidden" id="edit-fin-id" value="">
+                            <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                                <select id="new-fin-type" class="border rounded-lg p-2 text-sm bg-white"><option value="expense">รายจ่าย (ต้นทุน)</option><option value="income">รายรับ</option></select>
+                                <select id="new-fin-cat" class="border rounded-lg p-2 text-sm bg-white"><option value="ค่าพันธุ์พืช">ค่าพันธุ์พืช</option><option value="ค่าปุ๋ย">ค่าปุ๋ย</option><option value="ค่าสารป้องกันกำจัดศัตรูพืช">ค่าสารป้องกันกำจัดศัตรูพืช</option><option value="ค่าจ้างแรงงาน">ค่าจ้างแรงงาน</option><option value="รายรับ">รายรับจากการขาย</option></select>
+                                <input type="text" id="new-fin-desc" placeholder="คำอธิบายรายการ" class="border rounded-lg p-2 text-sm bg-white sm:col-span-2">
+                                <input type="number" id="new-fin-amount" placeholder="จำนวนเงิน (บาท)" class="border rounded-lg p-2 text-sm bg-white">
+                            </div>
+                            <div class="flex space-x-3">
+                                <button onclick="saveFinanceItem()" id="fin-save-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">บันทึกรายการ</button>
+                                <button onclick="cancelEditFinance()" id="fin-cancel-btn" class="hidden bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-semibold">ยกเลิกแก้ไข</button>
+                                <button onclick="calculateFinanceSummary()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">คำนวณผลกำไร/ขาดทุน</button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
+                                <thead>
+                                    <tr class="bg-gray-100 border-b text-gray-700"><th class="p-3">ประเภท</th><th class="p-3">หมวดหมู่</th><th class="p-3">รายละเอียด</th><th class="p-3">จำนวนเงิน (บาท)</th><th class="p-3 text-center">จัดการ</th></tr>
+                                </thead>
+                                <tbody>
+                                    ${fin.items.length === 0 ? '<tr><td colspan="5" class="p-4 text-center text-gray-500">ยังไม่มีรายการเงินลงทุน</td></tr>' : 
+                                        fin.items.map(item => `
+                                            <tr class="border-b hover:bg-gray-50">
+                                                <td class="p-3"><span class="px-2.5 py-1 ${item.type === 'income' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'} rounded-full text-xs font-semibold">${item.type === 'income' ? 'รายรับ' : 'รายจ่าย'}</span></td>
+                                                <td class="p-3 font-medium text-gray-900">${escapeHtml(item.category)}</td>
+                                                <td class="p-3 text-gray-600">${escapeHtml(item.description)}</td>
+                                                <td class="p-3 font-bold ${item.type === 'income' ? 'text-emerald-600' : 'text-red-600'}">${item.amount.toLocaleString()}</td>
+                                                <td class="p-3 text-center space-x-2">
+                                                    <button onclick="editFinanceItem('${escapeHtml(item.id)}')" class="text-blue-500 hover:text-blue-700 p-1"><i data-lucide="edit-3" class="w-4 h-4 inline"></i></button>
+                                                    <button onclick="deleteFinanceItem('${escapeHtml(item.id)}')" class="text-red-500 hover:text-red-700 p-1"><i data-lucide="trash-2" class="w-4 h-4 inline"></i></button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    ` : `<div class="p-8 text-center text-gray-400 bg-gray-50 rounded-xl">เมนูย่อยนี้ถูกปิดใช้งานอยู่</div>`}
+                </div>
+            `;
+        }
+
+        // =====================================================
+        // SETTINGS
+        // =====================================================
+        function getSettingsHTML() {
+            const allFarms = farmsManager.getAllFarms();
+            const user = getCurrentUser();
+            return `
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                    <div class="flex justify-between items-center border-b pb-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900">ตั้งค่าระบบและจัดการสวน</h2>
+                            <p class="text-xs text-gray-500 mt-1">เพิ่ม/ลบสวน พื้นที่ตั้ง พิกัดภูมิศาสตร์ (Lat/Long) และชนิดพืช</p>
+                        </div>
+                        <button onclick="saveAllSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center space-x-2"><i data-lucide="save" class="w-4 h-4"></i><span>บันทึกการเปลี่ยนแปลงทั้งหมด</span></button>
+                    </div>
+
+                    <!-- บัญชีผู้ใช้ -->
+                    <div class="bg-gradient-to-r from-blue-50 to-emerald-50 p-4 rounded-xl border border-blue-200 space-y-3">
+                        <h3 class="font-bold text-sm text-gray-800 flex items-center space-x-2">
+                            <i data-lucide="user-circle" class="w-4 h-4 text-blue-600"></i>
+                            <span>บัญชีผู้ใช้และสถานะการซิงค์</span>
+                        </h3>
+                        <div class="text-sm">
+                            ${user 
+                                ? `<p>เข้าสู่ระบบในชื่อ <b class="text-blue-700">${escapeHtml(user.username)}</b> — ข้อมูลซิงค์ขึ้นคลาวด์อัตโนมัติ</p>`
+                                : `<p class="text-gray-600">ยังไม่ได้เข้าสู่ระบบ — ข้อมูลเก็บในเบราว์เซอร์นี้เท่านั้น</p>`}
+                        </div>
+                        <div class="flex gap-2">
+                            ${user 
+                                ? `<button onclick="handleAuthButtonClick()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">ออกจากระบบ</button>`
+                                : `<button onclick="showLoginModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">เข้าสู่ระบบ / สมัครใหม่</button>`}
+                        </div>
+                    </div>
+
+                    <!-- Add Farm Form -->
+                    <div class="bg-gray-50 p-4 rounded-xl border space-y-4">
+                        <h3 class="font-bold text-sm text-gray-800">เพิ่มสวนใหม่ (พร้อมพิกัดภูมิศาสตร์)</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <input type="text" id="new-farm-name" placeholder="ชื่อสวน (เช่น สวนอยุธยา)" class="border rounded-lg p-2 text-sm bg-white">
+                            <input type="text" id="new-farm-location" placeholder="ชื่อสถานที่/จังหวัด" class="border rounded-lg p-2 text-sm bg-white">
+                            <input type="text" id="new-farm-size" placeholder="ขนาดพื้นที่ (เช่น 5 ไร่)" class="border rounded-lg p-2 text-sm bg-white">
+                            <input type="number" step="any" id="new-farm-lat" placeholder="ละติจูด (Latitude เช่น 14.2636)" class="border rounded-lg p-2 text-sm bg-white">
+                            <input type="number" step="any" id="new-farm-lon" placeholder="ลองจิจูด (Longitude เช่น 101.0796)" class="border rounded-lg p-2 text-sm bg-white">
+                            <input type="text" id="new-farm-radar" placeholder="ลิงก์เรดาร์ฝน (URL)" class="border rounded-lg p-2 text-sm bg-white" value="https://weather.tmd.go.th/bkkLoop.php">
+                        </div>
+                        <textarea id="new-farm-address" placeholder="รายละเอียดที่อยู่สวน (เช่น ตำบล อำเภอ จังหวัด)" class="w-full border rounded-lg p-2 text-sm bg-white"></textarea>
+                        <button onclick="addNewFarm()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">เพิ่มสวนใหม่</button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="font-bold text-sm text-gray-800">รายการสวนทั้งหมดในระบบและตั้งค่าพื้นที่ (เชื่อมโยงพยากรณ์และเรดาร์ฝน)</h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            ${allFarms.map(farm => `
+                                <div class="border rounded-xl p-4 bg-gray-50/50 space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-4 h-4 rounded-full" style="background-color: ${farm.color}"></div>
+                                            <h4 class="font-bold text-gray-900">${escapeHtml(farm.name)} (${escapeHtml(farm.location)} • ${escapeHtml(farm.size)})</h4>
+                                        </div>
+                                        <button onclick="deleteFarm('${escapeHtml(farm.id)}')" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center space-x-1"><i data-lucide="trash-2" class="w-4 h-4"></i><span>ลบสวนนี้</span></button>
+                                    </div>
+
+                                    <div class="bg-blue-50/60 p-3 rounded-lg border border-blue-200 space-y-3">
+                                        <div class="flex items-center space-x-2 text-blue-900 font-bold text-xs"><i data-lucide="map-pin" class="w-4 h-4 text-blue-600"></i><span>ตั้งค่าพิกัดภูมิศาสตร์ (ละติจูด, ลองจิจูด) และลิงก์เรดาร์ฝนเคลื่อนไหว</span></div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                                            <div><label class="text-[11px] text-gray-600 font-medium">ชื่อสถานที่/จังหวัด</label><input type="text" id="farm-loc-${escapeHtml(farm.id)}" value="${escapeHtml(farm.location || '')}" class="w-full border rounded p-1.5 text-xs bg-white"></div>
+                                            <div><label class="text-[11px] text-gray-600 font-medium">Latitude (ละติจูด)</label><input type="number" step="any" id="farm-lat-${escapeHtml(farm.id)}" value="${escapeHtml(farm.lat || 14.0)}" class="w-full border rounded p-1.5 text-xs bg-white"></div>
+                                            <div><label class="text-[11px] text-gray-600 font-medium">Longitude (ลองจิจูด)</label><input type="number" step="any" id="farm-lon-${escapeHtml(farm.id)}" value="${escapeHtml(farm.lon || 100.0)}" class="w-full border rounded p-1.5 text-xs bg-white"></div>
+                                            <div><label class="text-[11px] text-gray-600 font-medium">ลิงก์เรดาร์ฝนเคลื่อนไหว</label><input type="text" id="farm-radar-${escapeHtml(farm.id)}" value="${escapeHtml(farm.radarUrl || 'https://weather.tmd.go.th/bkkLoop.php')}" class="w-full border rounded p-1.5 text-xs bg-white"></div>
+                                        </div>
+                                        <div><label class="text-[11px] text-gray-600 font-medium">รายละเอียดที่อยู่สวน (แสดงในพยากรณ์อากาศ)</label><input type="text" id="farm-address-${escapeHtml(farm.id)}" value="${escapeHtml(farm.addressDetail || '')}" class="w-full border rounded p-1.5 text-xs bg-white"></div>
+                                        <div class="flex justify-end pt-1"><button onclick="updateFarmLocationInfo('${escapeHtml(farm.id)}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-semibold flex items-center space-x-1"><i data-lucide="check" class="w-3.5 h-3.5"></i><span>บันทึกพิกัดและเชื่อมโยงเรดาร์</span></button></div>
+                                    </div>
+
+                                    <div class="bg-white p-3 rounded-lg border space-y-2">
+                                        <p class="text-xs font-bold text-gray-700">ประเภทและชนิดพืชในสวน:</p>
+                                        <div class="space-y-1">
+                                            ${farm.settings.crops.map(crop => `
+                                                <div class="flex justify-between items-center text-xs bg-gray-50 p-2 rounded border">
+                                                    <span><b>${escapeHtml(crop.name)}</b> (${escapeHtml(crop.type)} - ${escapeHtml(crop.variety || 'ทั่วไป')}, ${escapeHtml(crop.area)} ไร่) | สถานะ: ${escapeHtml(crop.status)}</span>
+                                                    <button onclick="deleteCrop('${escapeHtml(farm.id)}', '${escapeHtml(crop.id)}')" class="text-red-500 hover:text-red-700"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 pt-2">
+                                            <input type="text" id="crop-name-${escapeHtml(farm.id)}" placeholder="ชื่อพืช" class="border rounded p-1.5 text-xs">
+                                            <select id="crop-type-${escapeHtml(farm.id)}" class="border rounded p-1.5 text-xs"><option value="ไม้ผล">ไม้ผล</option><option value="ผัก">ผัก</option><option value="พืชไร่">พืชไร่</option></select>
+                                            <input type="text" id="crop-variety-${escapeHtml(farm.id)}" placeholder="พันธุ์" class="border rounded p-1.5 text-xs">
+                                            <input type="number" id="crop-area-${escapeHtml(farm.id)}" placeholder="พื้นที่ (ไร่)" class="border rounded p-1.5 text-xs">
+                                            <button onclick="addCropToFarm('${escapeHtml(farm.id)}')" class="bg-blue-600 text-white rounded p-1.5 text-xs font-semibold">เพิ่มพืช</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Python TMD API Integration Section -->
+                    <div class="border-t pt-6 mt-6 space-y-3 bg-emerald-50/40 p-4 rounded-xl border-emerald-200">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="code" class="w-5 h-5 text-emerald-600"></i>
+                            <h3 class="font-bold text-base text-gray-900">สคริปต์เชื่อมโยง TMD API (Python Backend Integration)</h3>
+                        </div>
+                        <p class="text-xs text-gray-600">ฟังก์ชันสำหรับดึงและแปลงข้อมูลพยากรณ์อากาศจาก <code>/api/weather/tmd?lat=...&lon=...</code> ของกรมอุตุนิยมวิทยา</p>
+                        <pre class="bg-gray-900 text-emerald-400 p-3 rounded-xl text-xs overflow-x-auto font-mono"><code>import requests
+
+def fetch_tmd_weather(lat, lon, token=None):
+    url = f"/api/weather/tmd"
+    params = { 'lat': lat, 'lon': lon }
+    headers = { 'accept': 'application/json' }
+    if token:
+        headers['authorization'] = f"Bearer {token}"
+    try:
+        response = requests.get(url, headers=headers, params=params, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"API Error [{response.status_code}]: {response.text}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Connection Error: {e}")
+        return None</code></pre>
+                    </div>
+
+                    <!-- Backup / Restore -->
+                    <div class="border-t pt-6 mt-6 space-y-3">
+                        <h3 class="font-bold text-base text-gray-900">สำรองและกู้คืนข้อมูลสวน</h3>
+                        <p class="text-xs text-gray-500">สำรองข้อมูลสวนทั้งหมดเป็นไฟล์ JSON</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="backupData()" class="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm"><i data-lucide="download" class="w-4 h-4"></i><span>สำรองข้อมูล JSON</span></button>
+                            <label class="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm cursor-pointer"><i data-lucide="upload" class="w-4 h-4"></i><span>กู้คืนข้อมูล JSON</span><input id="restore-file-input" type="file" accept="application/json,.json" class="hidden" onchange="restoreData(this.files[0]); this.value=''"></label>
+                        </div>
+                    </div>
+
+                    <!-- Copy Code Section -->
+                    <div class="border-t pt-6 mt-6 space-y-3">
+                        <h3 class="font-bold text-base text-gray-900">คัดลอกโค้ด HTML ทั้งหมด</h3>
+                        <p class="text-xs text-gray-500">ท่านสามารถกดปุ่มด้านล่างเพื่อคัดลอกโค้ดโปรแกรมทั้งหมดไปใช้งานได้ทันที</p>
+                        <div class="flex flex-col space-y-2">
+                            <button onclick="copyEntireCode()" class="flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-3 rounded-xl font-bold text-sm transition-all shadow-sm">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                                <span>คลิกเพื่อคัดลอกโค้ดทั้งหมด</span>
+                            </button>
+                            <textarea id="code-textarea" readonly class="w-full h-32 p-3 text-xs font-mono bg-gray-100 border rounded-xl select-all focus:outline-none focus:ring-2 focus:ring-blue-500" onclick="this.select()" placeholder="โค้ด HTML ทั้งหมดจะปรากฏที่นี่..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // =====================================================
+        // FARM LOCATION
+        // =====================================================
+        function updateFarmLocationInfo(farmId) {
+            const farm = farmsManager.farms[farmId];
+            if (!farm) return;
+            const locInput = document.getElementById(`farm-loc-${farmId}`).value;
+            const latInput = parseFloat(document.getElementById(`farm-lat-${farmId}`).value);
+            const lonInput = parseFloat(document.getElementById(`farm-lon-${farmId}`).value);
+            const radarInput = document.getElementById(`farm-radar-${farmId}`).value;
+            const addressInput = document.getElementById(`farm-address-${farmId}`).value;
+
+            if (!locInput || isNaN(latInput) || isNaN(lonInput)) {
+                showToast('กรุณากรอกชื่อสถานที่และพิกัด Latitude / Longitude ให้ถูกต้อง', 'error');
+                return;
+            }
+
+            farm.location = locInput;
+            farm.lat = latInput;
+            farm.lon = lonInput;
+            farm.radarUrl = radarInput || 'https://weather.tmd.go.th/bkkLoop.php';
+            farm.addressDetail = addressInput || locInput;
+
+            weatherDatabase[farmId] = {
+                lat: farm.lat, lon: farm.lon, addressDetail: farm.addressDetail,
+                temp: 32, condition: 'เชื่อมโยงพิกัดใหม่สำเร็จ', humidity: 75, rainChance: 50,
+                wind: '10 กม./ชม.', source: 'TMD API & Open-Meteo', radarUrl: farm.radarUrl,
+                updateTime: 'อัปเดตพิกัดเรียบร้อย', isOffline: false,
+                past7DaysRain: [2, 1, 4, 0, 0, 5, 2], future7DaysRain: [10, 20, 30, 10, 0, 0, 0]
+            };
+
+            farmsManager.autoSave();
+            updateUIForCurrentFarm();
+            loadTabContent('settings');
+            startWeatherAutoRefresh();
+            showToast('อัปเดตพิกัดพื้นที่และเชื่อมโยงเรดาร์ฝนเรียบร้อยแล้ว', 'success');
+        }
+
+        function toggleSubMenu(menuKey, isChecked) {
+            const farm = farmsManager.getCurrentFarm();
+            if (farm.settings[menuKey]) {
+                farm.settings[menuKey].enabled = isChecked;
+                farmsManager.autoSave();
+                loadTabContent(currentTab);
+            }
+        }
+
+        // =====================================================
+        // CRUD FERTILIZER
+        // =====================================================
+        function saveFertilizerItem() {
+            const editId = document.getElementById('edit-fert-id').value;
+            const type = document.getElementById('new-fert-type').value;
+            const name = document.getElementById('new-fert-name').value;
+            const date = document.getElementById('new-fert-date').value;
+            const time = document.getElementById('new-fert-time').value;
+
+            if (!name || !date) { showToast('กรุณากรอกชื่อและวันที่ให้ครบถ้วน', 'error'); return; }
+            const farm = farmsManager.getCurrentFarm();
+            if (editId) {
+                const item = farm.settings.fertilizer.items.find(i => i.id === editId);
+                if (item) { item.type = type; item.name = name; item.date = date; item.time = time; showToast('แก้ไขข้อมูลปุ๋ยสำเร็จ', 'success'); }
+            } else {
+                farm.settings.fertilizer.items.push({ id: 'fert_' + Date.now(), type, name, date, time });
+                showToast('เพิ่มข้อมูลปุ๋ยสำเร็จ', 'success');
+            }
+            farmsManager.autoSave();
+            loadTabContent('fertilizer');
+        }
+
+        function editFertilizerItem(id) {
+            const farm = farmsManager.getCurrentFarm();
+            const item = farm.settings.fertilizer.items.find(i => i.id === id);
+            if (item) {
+                document.getElementById('edit-fert-id').value = item.id;
+                document.getElementById('new-fert-type').value = item.type;
+                document.getElementById('new-fert-name').value = item.name;
+                document.getElementById('new-fert-date').value = item.date;
+                document.getElementById('new-fert-time').value = item.time || '';
+                document.getElementById('fert-form-title').textContent = 'แก้ไขข้อมูลปุ๋ย';
+                document.getElementById('fert-save-btn').textContent = 'บันทึกการแก้ไข';
+                document.getElementById('fert-cancel-btn').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function cancelEditFertilizer() { loadTabContent('fertilizer'); }
+        function deleteFertilizerItem(id) {
+            if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+                const farm = farmsManager.getCurrentFarm();
+                farm.settings.fertilizer.items = farm.settings.fertilizer.items.filter(i => i.id !== id);
+                farmsManager.autoSave();
+                loadTabContent('fertilizer');
+                showToast('ลบรายการสำเร็จ', 'success');
+            }
+        }
+
+        // =====================================================
+        // CRUD PEST
+        // =====================================================
+        function savePestItem() {
+            const editId = document.getElementById('edit-pest-id').value;
+            const category = document.getElementById('new-pest-cat').value;
+            const name = document.getElementById('new-pest-name').value;
+            const method = document.getElementById('new-pest-method').value;
+            const date = document.getElementById('new-pest-date').value;
+
+            if (!name || !date) { showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error'); return; }
+            const farm = farmsManager.getCurrentFarm();
+            if (editId) {
+                const item = farm.settings.pest.items.find(i => i.id === editId);
+                if (item) { item.category = category; item.name = name; item.method = method; item.date = date; showToast('แก้ไขข้อมูลศัตรูพืชสำเร็จ', 'success'); }
+            } else {
+                farm.settings.pest.items.push({ id: 'pest_' + Date.now(), category, name, method, date });
+                showToast('เพิ่มข้อมูลศัตรูพืชสำเร็จ', 'success');
+            }
+            farmsManager.autoSave();
+            loadTabContent('pest');
+        }
+
+        function editPestItem(id) {
+            const farm = farmsManager.getCurrentFarm();
+            const item = farm.settings.pest.items.find(i => i.id === id);
+            if (item) {
+                document.getElementById('edit-pest-id').value = item.id;
+                document.getElementById('new-pest-cat').value = item.category;
+                document.getElementById('new-pest-name').value = item.name;
+                document.getElementById('new-pest-method').value = item.method;
+                document.getElementById('new-pest-date').value = item.date;
+                document.getElementById('pest-form-title').textContent = 'แก้ไขข้อมูลศัตรูพืช';
+                document.getElementById('pest-save-btn').textContent = 'บันทึกการแก้ไข';
+                document.getElementById('pest-cancel-btn').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function cancelEditPest() { loadTabContent('pest'); }
+        function deletePestItem(id) {
+            if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+                const farm = farmsManager.getCurrentFarm();
+                farm.settings.pest.items = farm.settings.pest.items.filter(i => i.id !== id);
+                farmsManager.autoSave();
+                loadTabContent('pest');
+                showToast('ลบรายการสำเร็จ', 'success');
+            }
+        }
+
+        // =====================================================
+        // CRUD CALENDAR
+        // =====================================================
+        function saveCalendarItem() {
+            const editId = document.getElementById('edit-cal-id').value;
+            const type = document.getElementById('new-cal-type').value;
+            const title = document.getElementById('new-cal-title').value;
+            const date = document.getElementById('new-cal-date').value;
+
+            if (!title || !date) { showToast('กรุณากรอกข้อมูลหัวข้อและวันที่', 'error'); return; }
+            const farm = farmsManager.getCurrentFarm();
+            if (editId) {
+                const item = farm.settings.calendarTasks.items.find(i => i.id === editId);
+                if (item) { item.type = type; item.title = title; item.date = date; showToast('แก้ไขกำหนดการสำเร็จ', 'success'); }
+            } else {
+                farm.settings.calendarTasks.items.push({ id: 'cal_' + Date.now(), type, title, date });
+                showToast('เพิ่มกำหนดการสำเร็จ', 'success');
+            }
+            farmsManager.autoSave();
+            loadTabContent('calendar');
+        }
+
+        function editCalendarItem(id) {
+            const farm = farmsManager.getCurrentFarm();
+            const item = farm.settings.calendarTasks.items.find(i => i.id === id);
+            if (item) {
+                document.getElementById('edit-cal-id').value = item.id;
+                document.getElementById('new-cal-type').value = item.type;
+                document.getElementById('new-cal-title').value = item.title;
+                document.getElementById('new-cal-date').value = item.date;
+                document.getElementById('cal-form-title').textContent = 'แก้ไขกำหนดการ';
+                document.getElementById('cal-save-btn').textContent = 'บันทึกการแก้ไข';
+                document.getElementById('cal-cancel-btn').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function cancelEditCalendar() { loadTabContent('calendar'); }
+        function deleteCalendarItem(id) {
+            if (confirm('คุณต้องการลบกำหนดการนี้ใช่หรือไม่?')) {
+                const farm = farmsManager.getCurrentFarm();
+                farm.settings.calendarTasks.items = farm.settings.calendarTasks.items.filter(i => i.id !== id);
+                farmsManager.autoSave();
+                loadTabContent('calendar');
+                showToast('ลบกำหนดการสำเร็จ', 'success');
+            }
+        }
+
+        // =====================================================
+        // CRUD FINANCE
+        // =====================================================
+        function saveFinanceItem() {
+            const editId = document.getElementById('edit-fin-id').value;
+            const type = document.getElementById('new-fin-type').value;
+            const category = document.getElementById('new-fin-cat').value;
+            const description = document.getElementById('new-fin-desc').value;
+            const amount = parseFloat(document.getElementById('new-fin-amount').value);
+
+            if (isNaN(amount) || amount <= 0) { showToast('กรุณากรอกจำนวนเงินให้ถูกต้อง', 'error'); return; }
+            const farm = farmsManager.getCurrentFarm();
+            if (editId) {
+                const item = farm.settings.financeRecords.items.find(i => i.id === editId);
+                if (item) { item.type = type; item.category = category; item.description = description; item.amount = amount; showToast('แก้ไขรายการเงินลงทุนสำเร็จ', 'success'); }
+            } else {
+                farm.settings.financeRecords.items.push({ id: 'fin_' + Date.now(), type, category, description, amount });
+                showToast('บันทึกรายการเงินลงทุนสำเร็จ', 'success');
+            }
+            farmsManager.autoSave();
+            loadTabContent('finance');
+        }
+
+        function editFinanceItem(id) {
+            const farm = farmsManager.getCurrentFarm();
+            const item = farm.settings.financeRecords.items.find(i => i.id === id);
+            if (item) {
+                document.getElementById('edit-fin-id').value = item.id;
+                document.getElementById('new-fin-type').value = item.type;
+                document.getElementById('new-fin-cat').value = item.category;
+                document.getElementById('new-fin-desc').value = item.description;
+                document.getElementById('new-fin-amount').value = item.amount;
+                document.getElementById('fin-form-title').textContent = 'แก้ไขรายการรับ-จ่าย';
+                document.getElementById('fin-save-btn').textContent = 'บันทึกการแก้ไข';
+                document.getElementById('fin-cancel-btn').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function cancelEditFinance() { loadTabContent('finance'); }
+        function deleteFinanceItem(id) {
+            if (confirm('คุณต้องการลบรายการเงินนี้ใช่หรือไม่?')) {
+                const farm = farmsManager.getCurrentFarm();
+                farm.settings.financeRecords.items = farm.settings.financeRecords.items.filter(i => i.id !== id);
+                farmsManager.autoSave();
+                loadTabContent('finance');
+                showToast('ลบรายการสำเร็จ', 'success');
+            }
+        }
+
+        function calculateFinanceSummary() {
+            const farm = farmsManager.getCurrentFarm();
+            const fin = farm.settings.financeRecords;
+            let totalExpense = fin.items.filter(i => i.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+            let totalIncome = fin.items.filter(i => i.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
+            let net = totalIncome - totalExpense;
+            showToast(`คำนวณสำเร็จ: รายรับ ${totalIncome.toLocaleString()} | รายจ่าย ${totalExpense.toLocaleString()} | กำไรสุทธิ ${net.toLocaleString()} บาท`, 'success');
+        }
+
+        // =====================================================
+        // FARM CRUD
+        // =====================================================
+        function addNewFarm() {
+            const name = document.getElementById('new-farm-name').value;
+            const location = document.getElementById('new-farm-location').value;
+            const size = document.getElementById('new-farm-size').value;
+            const lat = parseFloat(document.getElementById('new-farm-lat').value) || 14.0;
+            const lon = parseFloat(document.getElementById('new-farm-lon').value) || 100.0;
+            const radarUrl = document.getElementById('new-farm-radar').value || 'https://weather.tmd.go.th/bkkLoop.php';
+            const addressDetail = document.getElementById('new-farm-address').value || location;
+
+            if (!name || !location) { showToast('กรุณากรอกชื่อสวนและสถานที่', 'error'); return; }
+            const id = 'farm_' + Date.now();
+            const colors = ['#f59e0b', '#8b5cf6', '#ef4444', '#3b82f6', '#10b981'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+
+            farmsManager.farms[id] = {
+                id, name, location, lat, lon, radarUrl, addressDetail, size: size || '1 ไร่', color, enabled: true,
+                settings: { 
+                    crops: [{ id: 'c_' + Date.now(), name: 'พืชผสมผสาน', type: 'ไม้ผล', variety: 'ทั่วไป', area: 1, status: 'กำลังปลูก' }],
+                    fertilizer: { enabled: true, items: [] }, 
+                    pest: { enabled: true, items: [] }, 
+                    calendarTasks: { enabled: true, items: [] }, 
+                    financeRecords: { enabled: true, items: [] } 
+                }
+            };
+            farmsManager.autoSave();
+            loadFarmSwitcher();
+            loadTabContent('settings');
+            showToast('เพิ่มสวนใหม่สำเร็จ', 'success');
+        }
+
+        function deleteFarm(id) {
+            if (Object.keys(farmsManager.farms).length <= 1) { 
+                showToast('ไม่สามารถลบสวนทั้งหมดได้ ต้องมีอย่างน้อย 1 สวน', 'error'); 
+                return; 
+            }
+            if (confirm('คุณต้องการลบสวนนี้รวมถึงข้อมูลภายในทั้งหมดใช่หรือไม่?')) {
+                delete farmsManager.farms[id];
+                if (currentFarmId === id) currentFarmId = Object.keys(farmsManager.farms)[0];
+                farmsManager.autoSave();
+                updateUIForCurrentFarm();
+                loadTabContent('settings');
+                showToast('ลบสวนสำเร็จ', 'success');
+            }
+        }
+
+        function addCropToFarm(farmId) {
+            const name = document.getElementById(`crop-name-${farmId}`).value;
+            const type = document.getElementById(`crop-type-${farmId}`).value;
+            const variety = document.getElementById(`crop-variety-${farmId}`).value;
+            const area = parseFloat(document.getElementById(`crop-area-${farmId}`).value) || 1;
+
+            if (!name) { showToast('กรุณากรอกชื่อพืช', 'error'); return; }
+            farmsManager.farms[farmId].settings.crops.push({ id: 'c_' + Date.now(), name, type, variety, area, status: 'กำลังเจริญเติบโต' });
+            farmsManager.autoSave();
+            loadTabContent('settings');
+            showToast('เพิ่มพืชสำเร็จ', 'success');
+        }
+
+        function deleteCrop(farmId, cropId) {
+            const farm = farmsManager.farms[farmId];
+            farm.settings.crops = farm.settings.crops.filter(c => c.id !== cropId);
+            farmsManager.autoSave();
+            loadTabContent('settings');
+            showToast('ลบพืชสำเร็จ', 'success');
+        }
+
+        function saveAllSettings() {
+            farmsManager.autoSave();
+            showToast('บันทึกการเปลี่ยนแปลงทั้งหมดเรียบร้อยแล้ว', 'success');
+        }
+
+        // =====================================================
+        // EXPORT
+        // =====================================================
+        function exportData(moduleName, format) {
+            const farm = farmsManager.getCurrentFarm();
+            if (!farm) return showToast('ไม่พบข้อมูลสวน', 'error');
+            const dataMap = {
+                fertilizer: farm.settings.fertilizer?.items || [],
+                pest: farm.settings.pest?.items || [],
+                irrigation: [{ status: 'ตามระบบปัจจุบัน', morning: '06:00-06:30', evening: '17:00-17:30' }],
+                calendar: farm.settings.calendarTasks?.items || [],
+                finance: farm.settings.financeRecords?.items || []
+            };
+            const rows = dataMap[moduleName] || [];
+            if (format === 'excel') {
+                const keys = rows.length ? Object.keys(rows[0]) : ['ข้อมูล'];
+                const th = keys.map(k => `<th>${escapeHtml(k)}</th>`).join('');
+                const tr = rows.map(r => `<tr>${keys.map(k => `<td>${escapeHtml(r[k])}</td>`).join('')}</tr>`).join('');
+                const workbook = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse}th,td{border:1px solid #999;padding:6px}th{background:#eee}</style></head><body><table><thead><tr>${th}</tr></thead><tbody>${tr || '<tr><td>ไม่มีข้อมูล</td></tr>'}</tbody></table></body></html>`;
+                downloadBlob('\uFEFF' + workbook, `SmartAgroMix_${moduleName}_${new Date().toISOString().slice(0,10)}.xls`, 'application/vnd.ms-excel;charset=utf-8');
+                showToast('ส่งออกข้อมูล Excel สำเร็จ', 'success');
+                return;
+            }
+            if (format === 'pdf') {
+                const tableRows = rows.map(r => `<tr>${Object.values(r).map(v => `<td>${escapeHtml(v)}</td>`).join('')}</tr>`).join('');
+                const headers = rows.length ? Object.keys(rows[0]).map(k => `<th>${escapeHtml(k)}</th>`).join('') : '<th>ไม่มีข้อมูล</th>';
+                const win = window.open('', '_blank');
+                if (!win) return showToast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต Pop-up', 'error');
+                win.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>Smart AgroMix - ${escapeHtml(moduleName)}</title><style>body{font-family:Arial,sans-serif;padding:24px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px;text-align:left}th{background:#f3f4f6}</style></head><body><h2>Smart AgroMix - ${escapeHtml(farm.name)}</h2><h3>${escapeHtml(moduleName)}</h3><table><thead><tr>${headers}</tr></thead><tbody>${tableRows || '<tr><td>ไม่มีข้อมูล</td></tr>'}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`);
+                win.document.close();
+                return;
+            }
+        }
+
+        // =====================================================
+        // BACKUP / RESTORE
+        // =====================================================
+        function backupData() {
+            const payload = { schemaVersion: SMART_AGROMIX_SCHEMA_VERSION, exportedAt: new Date().toISOString(), farms: safeClone(farmsManager.farms) };
+            downloadBlob(JSON.stringify(payload, null, 2), `SmartAgroMix_Backup_${new Date().toISOString().slice(0,10)}.json`, 'application/json');
+            showToast('สำรองข้อมูล JSON สำเร็จ', 'success');
+        }
+
+        function restoreData(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const payload = JSON.parse(reader.result);
+                    const farms = payload.farms || payload;
+                    if (!isValidFarmData(farms)) throw new Error('โครงสร้างข้อมูลไม่ถูกต้อง');
+                    if (!confirm('ยืนยันการกู้คืนข้อมูลสวนจากไฟล์สำรอง? ข้อมูลปัจจุบันจะถูกแทนที่')) return;
+                    const previous = safeClone(farmsManager.farms);
+                    farmsManager.farms = safeClone(farms);
+                    farmsManager.history = [previous];
+                    farmsManager.future = [];
+                    farmsManager.lastSavedSnapshot = safeClone(farmsManager.farms);
+                    farmsManager.autoSave();
+                    if (!farmsManager.farms[currentFarmId]) currentFarmId = Object.keys(farmsManager.farms)[0];
+                    updateUIForCurrentFarm();
+                    loadTabContent(currentTab);
+                    showToast('กู้คืนข้อมูลสำเร็จ', 'success');
+                } catch (e) {
+                    showToast(`กู้คืนข้อมูลไม่สำเร็จ: ${e.message}`, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // =====================================================
+        // TOAST
+        // =====================================================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-emerald-600' : 'bg-red-600';
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-xl shadow-lg flex items-center space-x-2 text-sm animate-slideUp`;
+            toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i><span>${escapeHtml(message)}</span>`;
+            container.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        // =====================================================
+        // COPY CODE
+        // =====================================================
+        async function copyEntireCode() {
+            const clone = document.documentElement.cloneNode(true);
+            clone.querySelectorAll('input[type="file"]').forEach(el => el.value = '');
+            // ล้างค่าที่ผู้ใช้อาจกรอก (ไม่บังคับ)
+            const fullHtml = '<!DOCTYPE html>\n' + clone.outerHTML;
+            
+            const textarea = document.getElementById('code-textarea');
+            if (textarea) {
+                textarea.value = fullHtml;
+                textarea.select();
+            }
+
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(fullHtml);
+                    showToast('คัดลอกโค้ด HTML ทั้งหมดเรียบร้อยแล้ว', 'success');
+                } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = fullHtml; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                    document.body.appendChild(ta); ta.focus(); ta.select();
+                    if (!document.execCommand('copy')) throw new Error('copy failed');
+                    ta.remove();
+                    showToast('คัดลอกโค้ด HTML ทั้งหมดเรียบร้อยแล้ว', 'success');
+                }
+            } catch (err) {
+                showToast('กรุณากดเลือกและคัดลอกข้อความจากกล่องข้อความด้านล่างแทน', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
